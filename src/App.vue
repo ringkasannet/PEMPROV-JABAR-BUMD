@@ -1,7 +1,8 @@
 <template>
   <div id="main_container">
     <div class="header_container">
-      <img src="Logo Pemprov Jabar.png" alt="Logo Pemprov Jabar">
+      <!-- <img src="Logo Pemprov Jabar.png" alt="Logo Pemprov Jabar"> -->
+      Pemetaan Fungsi BUMD Pemprov Jawa Barat
     </div>
     <div id="input_container"></div>
     <div id="rekomendasi_container">
@@ -12,16 +13,16 @@
   </div>
 </template>
 
-<script>
-export default {
-  data() {
-    return {
-      rekomendasi: [
-        { id: 1, teks: 'Rekomendasi 1' },
-        { id: 2, teks: 'Rekomendasi 2' },
-        { id: 3, teks: 'Rekomendasi 3' },
-      ],
-    };
-  },
-};
+<script setup>
+// export default {
+//   data() {
+//     return {
+//       rekomendasi: [
+//         { id: 1, teks: 'Rekomendasi 1' },
+//         { id: 2, teks: 'Rekomendasi 2' },
+//         { id: 3, teks: 'Rekomendasi 3' },
+//       ],
+//     };
+//   },
+// };
 </script>
