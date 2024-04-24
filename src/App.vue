@@ -13,6 +13,7 @@
 </template>
 
 <script setup>
+
 import HeaderContainer from './components/HeaderContainer.vue'
 import UserInputChat from './components/UserInputChat.vue';
 import DaftarRekomendasi from './components/DaftarRekomendasi.vue'
@@ -20,14 +21,15 @@ import DaftarRekomendasi from './components/DaftarRekomendasi.vue'
 </script>
 
 <style scoped>
+
 #outer_container{
-  width:100vw;
+  width: 100vw;
   display: flex;
   justify-content: center;
 }
 
 #main_container{
-  width:100vw;
+  width: 100vw;
   max-width: 1000px;
 }
 
