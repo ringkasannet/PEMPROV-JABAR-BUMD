@@ -59,6 +59,7 @@ const toggleDesc = (index) => {
   display: block;
   /* margin: 10px; */
   height: auto;
+  width: 500px;
   padding: 10px;
   border: 1px solid #ccc;
   border-radius: 5px;

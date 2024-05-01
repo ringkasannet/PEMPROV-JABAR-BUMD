@@ -4,6 +4,7 @@
       <button type="submit">Tanyakan Kebutuhan <br> Penugasan Disini</button>
       <input type="text" v-model="message" placeholder="Type your message here...">
     </form>
+    <div v-if="error" class="error-message">{{ error }}</div>
   </div>
 </template>
 
@@ -11,9 +12,14 @@
 import { ref } from 'vue';
 
 const message = ref('');
+const error = ref('');
+
 const sendMessage = () => {
   if (message.value.trim() !== '') {
     message.value = '';
+    error.value = '';
+  } else {
+    error.value = 'Input tidak boleh kosong';
   }
 };
 </script>
@@ -22,6 +28,7 @@ const sendMessage = () => {
 .chat-app {
   width: 100%;
   margin: 0 auto;
+  position: relative;
 }
 
 .form-container {
@@ -54,5 +61,14 @@ button {
 
 button:hover {
   background-color: #0056b3;
+}
+
+.error-message {
+  color: red;
+  position: absolute;
+  bottom: -20px;
+  left: 0;
+  width: 100%;
+  text-align: center;
 }
 </style>
