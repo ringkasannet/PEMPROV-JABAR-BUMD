@@ -34,20 +34,16 @@ const showDesc = ref(false)
 </script>
 
 <style scoped>
-
 #logo_BUMD{
     max-width:50px;
 }
-
 .header_spanner{
     display: flex;
     flex-direction: row;
 }
-
 .margin_kiri20{
     margin-left: 20px;
 }
-
 .margin_bawah10{
     margin-bottom: 10px;
 }
