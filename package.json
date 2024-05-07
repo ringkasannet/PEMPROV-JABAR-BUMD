@@ -16,7 +16,8 @@
     "vue": "^3.4.21",
     "vue-markdown": "^2.2.4",
     "vue-markdown-render": "^2.1.1",
-    "vue-router": "^4.3.0"
+    "vue-router": "^4.3.0",
+    "vue-toggles": "^2.1.0"
   },
   "devDependencies": {
     "@tsconfig/node20": "^20.1.4",
