@@ -9,6 +9,7 @@
         <img class="card_image" src="../assets/infographic.png" alt="" />
       </Transition>
     </div>
+    <div v-if="error" class="error-message">{{ error }}</div>
 
     <Transition name="fade" appear>
       <div class="chat_container">
@@ -20,16 +21,17 @@
             </button>
             <input type="text" v-model="message" placeholder="Kebutuhan penugasan..." />
           </form>
-          <div v-if="error" class="error-message">{{ error }}</div>
         </div>
-        <div id="answer">
+        <div v-if="jawaban.length > 0">
           <div class="answer-font" v-for="(result, index) in jawaban" :key="index">
             <Transition name="fade" appear>
               <div class="penjelasan">
                 <h1 class="card_title">{{ result?.name }} <br /></h1>
                 <!-- {{ result._id }} <br /> -->
-                <h2>Persentase Kesesuaian: <span>{{ result?.score }}</span></h2>
-                <div >
+                <h2>
+                  Persentase Kesesuaian: <span>{{ result?.score }}</span>
+                </h2>
+                <div v-if="result.desc">
                   <vue-markdown :source="result?.desc" />
                 </div>
               </div>
@@ -41,15 +43,23 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref } from "vue";
 import VueMarkdown from "vue-markdown-render";
 
+interface itemJawaban {
+  name: string;
+  id: string;
+  score: string;
+  desc: string;
+  scoreNum: number;
+};
 const message = ref("");
 const error = ref("");
 const submittedMessage = ref("");
-const jawaban = ref([]);
+const jawaban = ref<itemJawaban[]>([]);
 const streamingText = ref([]);
+const responseError = ref(false);
 
 // const sendMessage = async () => {
 //   if (message.value.trim() !== '') {
@@ -67,71 +77,93 @@ const streamingText = ref([]);
 // };
 
 const sendMessage = async () => {
+  console.log(error.value);
+
   console.log("in sendMessage");
-  jawaban.value = {};
+  jawaban.value = [];
+  error.value= "";
   if (message.value != "") {
     message.value;
     console.log("query:", message.value);
+    console.log("error:", error.value);
 
-    // const query = await fetch("http://localhost:3000/askQuestion/" + message.value);
-    const query = await fetch("http://localhost:3000/askDummy/");
-    console.log("query:", query);
-    const answers = await query.json();
-    console.log("answers:", answers);
-    // score: answer.penjelasan.match(/\*\* Skor \*\*:(.+?)\*\*/)[1]
+    // const query = await fetch("https://high-ace-421114.et.r.appspot.com/askQuestion/" + message.value);
 
-    const convertedAnswers = answers.map((answer) => {
-      const regexScore = /(\d+)%/;
-      const cobaExtractScore = answer.penjelasan.match(regexScore);
-      // console.log("scoreExtracted:", cobaExtractScore);
-      let scoreExtracted;
-      if (cobaExtractScore) {
-        scoreExtracted = cobaExtractScore[1];
-      } else {
-        scoreExtracted = "Not Found";
-      }
-      // D. Penjelasan:
-      // const regexPenjelasan = /D\.\s*Penjelasan:\s*(.*)/i;
-      // const regexPenjelasan = /D\. Penjelasan:\s(.*)/;
-      // const cobaExtractPenjelasan = answer.penjelasan.match(regexPenjelasan);
-      // console.log("Penjelasan asli:", answer.penjelasan);
-      // let penjelasanExtracted;
-      // if (cobaExtractPenjelasan) {
-      //   penjelasanExtracted = cobaExtractPenjelasan[1];
-      //   console.log("Penjelasan Extracted:", cobaExtractPenjelasan[1]);
-      // } else {
-      //   penjelasanExtracted = "Not Found";
-      //   console.log("Penjelasan Extracted not found");
-      // }
+    console.log(error.value);
 
-      const targetString = "D. Penjelasan:";
-      const startIndex = answer.penjelasan.indexOf(targetString) + targetString.length;
-      const penjelasanExtracted = answer.penjelasan.substring(startIndex).trim();
+    // const query = await fetch("http://localhost:3000/askDummy/")
+    const query = await fetch("https://high-ace-421114.et.r.appspot.com/askQuestion/" + message.value)
+      .then(async (query) => {
+        if (query.status != 200) {
+          console.log("Error: ", query.status);
+          error.value = `Error:  ${query.status}`;
+          return;
+        }
+        console.log("query:", query);
+        const answers = await query.json();
+        console.log("answers:", answers);
+        // score: answer.penjelasan.match(/\*\* Skor \*\*:(.+?)\*\*/)[1]
 
-      console.log("penjelasan extracted: ", penjelasanExtracted); // Output: This is the explanation text.
-      // const searchStringPenjelasan = "D. Penjelasan: ";
-      // console.log('answer.penjelasan:', answer.penjelasan)
-      // const indexPenjelasan = answer.penjelasan.indexOf(searchStringPenjelasan);
-      // console.log('indexPenjelasan:', indexPenjelasan)
-      // let penjelasanText
-      // if (indexPenjelasan !== -1) {
-      //    penjelasanText = text.substring(index + searchString.length); // Extract from after "D. Penjelasan: "
-      // } else {
-      //   console.log('"D. Penjelasan: " not found in the text.');
-      // }
-      const scoreNum = parseInt(scoreExtracted);
+        const convertedAnswers = answers.map((answer: any) => {
+          const regexScore = /(\d+)%/;
+          const cobaExtractScore = answer.penjelasan.match(regexScore);
+          // console.log("scoreExtracted:", cobaExtractScore);
+          let scoreExtracted;
+          if (cobaExtractScore) {
+            scoreExtracted = cobaExtractScore[1];
+          } else {
+            scoreExtracted = "Not Found";
+          }
+          // D. Penjelasan:
+          // const regexPenjelasan = /D\.\s*Penjelasan:\s*(.*)/i;
+          // const regexPenjelasan = /D\. Penjelasan:\s(.*)/;
+          // const cobaExtractPenjelasan = answer.penjelasan.match(regexPenjelasan);
+          // console.log("Penjelasan asli:", answer.penjelasan);
+          // let penjelasanExtracted;
+          // if (cobaExtractPenjelasan) {
+          //   penjelasanExtracted = cobaExtractPenjelasan[1];
+          //   console.log("Penjelasan Extracted:", cobaExtractPenjelasan[1]);
+          // } else {
+          //   penjelasanExtracted = "Not Found";
+          //   console.log("Penjelasan Extracted not found");
+          // }
 
-      return {
-        name: answer.name,
-        _id: answer._id,
-        score: `${scoreExtracted}%`,
-        desc: penjelasanExtracted,
-        scoreNum: scoreNum ? scoreNum : 0,
-      };
-    });
-    const sortedAnswers = convertedAnswers.sort((a, b) => b.scoreNum - a.scoreNum);
+          const targetString = "D. Penjelasan:";
+          const startIndex = answer.penjelasan.indexOf(targetString) + targetString.length;
+          const penjelasanExtracted = answer.penjelasan.substring(startIndex).trim();
 
-    jawaban.value = sortedAnswers;
+          console.log("penjelasan extracted: ", penjelasanExtracted); // Output: This is the explanation text.
+          // const searchStringPenjelasan = "D. Penjelasan: ";
+          // console.log('answer.penjelasan:', answer.penjelasan)
+          // const indexPenjelasan = answer.penjelasan.indexOf(searchStringPenjelasan);
+          // console.log('indexPenjelasan:', indexPenjelasan)
+          // let penjelasanText
+          // if (indexPenjelasan !== -1) {
+          //    penjelasanText = text.substring(index + searchString.length); // Extract from after "D. Penjelasan: "
+          // } else {
+          //   console.log('"D. Penjelasan: " not found in the text.');
+          // }
+          const scoreNum = parseInt(scoreExtracted);
+
+          return {
+            name: answer.name,
+            _id: answer._id,
+            score: `${scoreExtracted}%`,
+            desc: penjelasanExtracted,
+            scoreNum: scoreNum ? scoreNum : 0,
+          };
+        });
+        const sortedAnswers = convertedAnswers.sort((a: any, b: any) => b.scoreNum - a.scoreNum);
+
+        jawaban.value = sortedAnswers;
+      })
+      .catch((err) => {
+        console.log("oops error: ",err.message);
+        error.value=err
+        console.log(error.value);
+        return;
+      });
+
     // startStreaming();
   } else {
     // error.value = "Input tidak boleh kosong";
@@ -151,18 +183,18 @@ const sendMessage = async () => {
 //   });
 // };
 
-const startStreaming = () => {
-  jawaban.value.forEach((result, index) => {
-    const words = result.penjelasan.split(" ");
-    let currentText = "";
-    words.forEach((word, wordIndex) => {
-      setTimeout(() => {
-        currentText += word + " ";
-        streamingText.value[index] = currentText.replace(/\*\* Skor \*\*:.+?\*\* Penjelasan \*\*:/, "").replace(/\*\*[\w\s]+?\*\*/, "");
-      }, wordIndex * 65);
-    });
-  });
-};
+// const startStreaming = () => {
+//   jawaban.value.forEach((result, index) => {
+//     const words = result.penjelasan.split(" ");
+//     let currentText = "";
+//     words.forEach((word, wordIndex) => {
+//       setTimeout(() => {
+//         currentText += word + " ";
+//         streamingText.value[index] = currentText.replace(/\*\* Skor \*\*:.+?\*\* Penjelasan \*\*:/, "").replace(/\*\*[\w\s]+?\*\*/, "");
+//       }, wordIndex * 65);
+//     });
+//   });
+// };
 </script>
 
 <style scoped>
@@ -291,7 +323,7 @@ h2.main_tittle {
   padding: 0;
 }
 
-h1.card_title{
+h1.card_title {
   color: rgb(0, 0, 79);
 }
 .flex_column {

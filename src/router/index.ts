@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import HomeView from '../views/HomeView.vue'
-import BumdView from '../views/BumdView.vue'
+import HomeView from '../views/HomeView.vue' 
+import BumdView from '../views/BumdView.vue' 
 
 console.log("in router/index.ts")
 const router = createRouter({

@@ -12,7 +12,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import HeaderContainer from "./components/HeaderContainer.vue";
 // import UserInputChat from './components/UserInputChat.vue';
 import Footer from "./components/Footer.vue";
