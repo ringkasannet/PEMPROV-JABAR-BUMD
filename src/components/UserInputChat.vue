@@ -14,7 +14,6 @@
     <div id="answer">
       <div class="answer-font" v-for="(result, index) in jawaban" :key="index">
         {{ result?.name }} <br />
-        <!-- {{ result._id }} <br /> -->
         Skor: <span>{{ result?.score }}</span>
         <div class="penjelasan">
           <vue-markdown :source="result?.desc"/>
