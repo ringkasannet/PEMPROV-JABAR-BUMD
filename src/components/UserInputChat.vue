@@ -1,10 +1,9 @@
 <template>
   <div>
-
     <div class="chat-app">
       <form @submit.prevent="sendMessage" class="form-container">
         <button class="button-ask" type="submit">
-          Tanyakan Kebutuhan <br />
+          Tanyakan Kebutuhan <br/>
           Penugasan Disini
         </button>
         <input type="text" v-model="message" placeholder="Tulis disini..." />
@@ -12,8 +11,10 @@
       <div v-if="error" class="error-message">{{ error }}</div>
     </div>
     <div id="answer">
+      <PulseLoader class="loader" v-if="loading"></PulseLoader>
       <div class="answer-font" v-for="(result, index) in jawaban" :key="index">
-        {{ result?.name }} <br />
+        {{ result?.name }} <br/>
+        <!-- {{ result._id }} <br/> -->
         Skor: <span>{{ result?.score }}</span>
         <div class="penjelasan">
           <vue-markdown :source="result?.desc"/>
@@ -26,27 +27,14 @@
 <script setup>
 import { ref } from "vue";
 import VueMarkdown from "vue-markdown-render";
+import PulseLoader from 'vue-spinner/src/PulseLoader.vue'
 
 const message = ref("");
 const error = ref("");
 const submittedMessage = ref("");
 const jawaban = ref([]);
 const streamingText = ref([]);
-
-// const sendMessage = async () => {
-//   if (message.value.trim() !== '') {
-//     submittedMessage.value = message.value;
-//     message.value = '';
-//     error.value = '';
-//     console.log('query:', submittedMessage.value);
-
-//     const query = await fetch('http://localhost:3000/askQuestion/' + submittedMessage.value)
-//     jawaban.value = await query.json();
-//     startStreaming();
-//   } else {
-//     error.value = 'Input tidak boleh kosong';
-//   }
-// };
+const loading = ref(false)
 
 const sendMessage = async () => {
   console.log("in sendMessage");
@@ -54,6 +42,7 @@ const sendMessage = async () => {
   if (message.value != "") {
     message.value;
     console.log("query:", message.value);
+    loading.value = true
 
     const query = await fetch('http://localhost:3000/askQuestion/' + message.value)
     // const query = await fetch("http://localhost:3000/askDummy/");
@@ -80,20 +69,10 @@ const sendMessage = async () => {
       if (cobaExtractPenjelasan) {
         penjelasanExtracted = cobaExtractPenjelasan[1];
         console.log("Penjelasan Extracted:", cobaExtractPenjelasan[1]);
-
-      } else {
+      } 
+      else {
         penjelasanExtracted = "Not Found";
       }
-      // const searchStringPenjelasan = "D. Penjelasan: ";
-      // console.log('answer.penjelasan:', answer.penjelasan)
-      // const indexPenjelasan = answer.penjelasan.indexOf(searchStringPenjelasan);
-      // console.log('indexPenjelasan:', indexPenjelasan)
-      // let penjelasanText
-      // if (indexPenjelasan !== -1) {
-      //    penjelasanText = text.substring(index + searchString.length); // Extract from after "D. Penjelasan: "
-      // } else {
-      //   console.log('"D. Penjelasan: " not found in the text.');
-      // }
       const scoreNum=parseInt(scoreExtracted);
 
       return {
@@ -106,26 +85,13 @@ const sendMessage = async () => {
     });
     const sortedAnswers = convertedAnswers.sort((a, b) => b.scoreNum - a.scoreNum);
 
+    loading.value = false
     jawaban.value = sortedAnswers;
     // startStreaming();
   } else {
     error.value = "Input tidak boleh kosong";
   }
 };
-
-
-// const startStreaming = () => {
-//   jawaban.value.forEach((result, index) => {
-//     const words = result.penjelasan.split(' ');
-//     let currentText = '';
-//     words.forEach((word, wordIndex) => {
-//       setTimeout(() => {
-//         currentText += word + ' ';
-//         streamingText.value[index] = currentText;
-//       }, wordIndex * 65);
-//     });
-//   });
-// };
 
 const startStreaming = () => {
   jawaban.value.forEach((result, index) => {
@@ -203,6 +169,11 @@ input[type="text"] {
   width: 100%;
   text-align: center;
   color: #007bff;
+}
+
+.loader {
+  margin-top: 200px;
+  margin-left: 450px;
 }
 
 #answer {
