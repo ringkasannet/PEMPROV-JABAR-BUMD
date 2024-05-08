@@ -61,7 +61,8 @@ async function evaluasiBUMD(bumd: bumdCandidate, query: string) {
     //   throw new Error(evaluationQuery.status);
     // }
     // const url = `https://high-ace-421114.et.r.appspot.com/evaluasiBUMD/${bumd.id}/${query}`;
-    const url = `http://localhost:3000/evaluasiBUMD/${bumd.id}/${query}`;
+    // const url = `http://localhost:3000/evaluasiBUMD/${bumd.id}/${query}`;
+    const url = `https://ringkasan.net/evaluasiBUMD/${bumd.id}/${query}`;
 
     console.log("fetching data from:", url);
     const evaluationQuery = fetch(url)

@@ -103,5 +103,10 @@ a{
     margin: 10px;
 }
 
+@media (max-width: 600px) {
+  .menu_container{
+    display:none
+  }
+}
 </style>
   

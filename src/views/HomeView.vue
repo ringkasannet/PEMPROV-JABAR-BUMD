@@ -130,5 +130,21 @@ h2.main_tittle {
     width: 300px;
     margin: 20px auto;
   }
+  h1.main_tittle {
+  font-family: Helvetica;
+  font-weight: lighter;
+  font-size: 3em;
+  margin: 0;
+  padding: 0;
+  /* margin: 15px; */
+}
+h2.main_tittle {
+  font-family: Helvetica;
+  font-weight: normal;
+  font-size: 2em;
+  margin: 0;
+  padding: 0;
+}
+
 }
 </style>

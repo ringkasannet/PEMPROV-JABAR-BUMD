@@ -3,7 +3,7 @@
     <div class="flex_row padding20 flex_end max_width centered_div top_banner">
       <div>
         <h1 class="main_tittle">Matching <span class="green_color">BUMD </span></h1>
-        <h2 class="text_right">Pemetaan kesesuaian penugasan BUMD</h2>
+        <h2 class="main_tittle text_right">Pemetaan kesesuaian penugasan BUMD</h2>
       </div>
       <Transition name="rotate" appear>
         <img class="card_image" src="../assets/infographic.png" alt="" />
@@ -14,7 +14,7 @@
     <Transition name="fade" appear>
       <div class="chat_container">
         <div class="chat-app">
-          <div style="display: flex; flex-direction: row; justify-content: end">
+          <div class="admin_container" style="">
             <div style="display: flex; justify-content: flex-end; margin-right: 10px">
               <div style="padding-top: 5px">Model:</div>
               <v-select v-model="aiModel" style="width: 200px" :options="['OpenAi', 'GeminiAi']"></v-select>
@@ -127,7 +127,9 @@ async function getBUMDCandidate() {
   if (!jumlahRekomendasi.value) {
     jumlahRekomendasi.value = 3;
   }
-  const url="http://localhost:3000/getBUMDCandidate/" + message.value + "/"+Number(jumlahRekomendasi.value)
+  // const url="http://localhost:3000/getBUMDCandidate/" + message.value + "/"+Number(jumlahRekomendasi.value)
+
+  const url = "https://ringkasan.net/getBUMDCandidate/" + message.value + "/" + Number(jumlahRekomendasi.value);
   // const url = "https://high-ace-421114.et.r.appspot.com/getBUMDCandidate/" + message.value + "/" + Number(jumlahRekomendasi.value);
 
   try {
@@ -490,5 +492,39 @@ h1.card_title {
 p.blinking {
   animation: blink 1s infinite;
   color: #4f8383;
+}
+.admin_container{
+  display: flex; flex-direction: row; justify-content: end;
+}
+@media (max-width: 600px) {
+  h1.main_tittle {
+    font-family: Helvetica;
+    font-weight: lighter;
+    font-size: 2em;
+    margin: 0;
+    padding: 0;
+    text-align: right;
+    /* margin: 15px; */
+  }
+  h2.main_tittle {
+    font-family: Helvetica;
+    font-weight: normal;
+    font-size: 1em;
+    margin: 0;
+    padding: 0;
+  }
+
+  h1.card_title {
+    color: rgb(0, 0, 79);
+  }
+  .card_image {
+  width: 100px;
+  margin-left: 40px;
+}
+.admin_container{
+  display:flex;
+  flex-direction: column;
+}
+
 }
 </style>
