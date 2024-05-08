@@ -14,7 +14,18 @@
     <Transition name="fade" appear>
       <div class="chat_container">
         <div class="chat-app">
-          <form @submit.prevent="sendMessage" class="form-container">
+          <div style="display: flex; flex-direction: row; justify-content: end">
+            <div style="display: flex; justify-content: flex-end; margin-right: 10px">
+              <div style="padding-top: 5px">Model:</div>
+              <v-select v-model="aiModel" style="width: 200px" :options="['OpenAi', 'GeminiAi']"></v-select>
+            </div>
+            <div style="display: flex; justify-content: flex-end">
+              <div style="padding-top: 5px">Jumlah Rekomendasi:</div>
+              <v-select v-model="jumlahRekomendasi" style="width: 100px" :options="[1, 2, 3, 4, 5]"></v-select>
+            </div>
+          </div>
+
+          <form @submit.prevent="processQuerry" class="form-container">
             <button class="button-ask margin_right" type="submit">
               Evaluasi Kesesuaian <br />
               Penugasan
@@ -22,12 +33,22 @@
             <input type="text" v-model="message" placeholder="Kebutuhan penugasan..." />
           </form>
         </div>
-        <div v-if="jawaban.length > 0">
+        <div v-if="loading" class="loading-container">
+          <img class="loading_image" src="../assets/work-in-progress.gif" />
+        </div>
+
+        <div class="candidate_container" style="display: flex; flex-direction: column; margin-top: 20px">
+          <div v-for="(candidate, index) in bumdCandidate" :key="index">
+            <Transition name="fade" appear>
+              <itemRekomendasiBUMD :bumd="candidate" :query="message" />
+            </Transition>
+          </div>
+        </div>
+        <!-- <div v-if="jawaban.length > 0">
           <div class="answer-font" v-for="(result, index) in jawaban" :key="index">
             <Transition name="fade" appear>
               <div class="penjelasan">
                 <h1 class="card_title">{{ result?.name }} <br /></h1>
-                <!-- {{ result._id }} <br /> -->
                 <h2>
                   Persentase Kesesuaian: <span>{{ result?.score }}</span>
                 </h2>
@@ -37,7 +58,7 @@
               </div>
             </Transition>
           </div>
-        </div>
+        </div> -->
       </div>
     </Transition>
   </div>
@@ -46,6 +67,13 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import VueMarkdown from "vue-markdown-render";
+import vSelect from "vue-select";
+import "vue-select/dist/vue-select.css";
+import itemRekomendasiBUMD from "../components/ItemRekomendasiBUMD.vue";
+// const PulseLoader = require('vue-spinner/src/PulseLoader.vue');
+
+// import PulseLoader from 'vue-spinner/src/PulseLoader.vue'
+// import PulseLoader from 'vue-spinner/src/PulseLoader.vue'
 
 interface itemJawaban {
   name: string;
@@ -53,35 +81,89 @@ interface itemJawaban {
   score: string;
   desc: string;
   scoreNum: number;
-};
+}
+interface bumdCandidate {
+  id: string;
+  name: string;
+  desc: string;
+  perda: string;
+}
 const message = ref("");
 const error = ref("");
 const submittedMessage = ref("");
 const jawaban = ref<itemJawaban[]>([]);
 const streamingText = ref([]);
 const responseError = ref(false);
+const loading = ref(false);
+const aiModel = ref("OpenAi");
+const bumdCandidate = ref<bumdCandidate[]>([]);
+const jumlahRekomendasi = ref(3);
 
-// const sendMessage = async () => {
-//   if (message.value.trim() !== '') {
-//     submittedMessage.value = message.value;
-//     message.value = '';
-//     error.value = '';
-//     console.log('query:', submittedMessage.value);
+async function processQuerry() {
+  loading.value = true;
+  bumdCandidate.value = [];
+  if (!message.value) {
+    console.log("query is empty, returning:");
+  }
+  console.log("query: ", message.value, "aiModel:", aiModel.value);
+  try {
+    const res = await getBUMDCandidate();
+    bumdCandidate.value = res;
+    console.log("bumdCandidate:", bumdCandidate.value);
+  } catch (err) {
+    console.log("error:", err);
+    error.value = JSON.stringify(err);
+    loading.value = false;
+  }
+  loading.value = false;
+}
+async function getBUMDCandidate() {
+  console.log("in getBUMDCandidate");
+  jawaban.value = [];
+  error.value = "";
 
-//     const query = await fetch('http://localhost:3000/askQuestion/' + submittedMessage.value)
-//     jawaban.value = await query.json();
-//     startStreaming();
-//   } else {
-//     error.value = 'Input tidak boleh kosong';
-//   }
-// };
+  // const query = await fetch("http://localhost:3000/askDummy/")
+  // const query = await fetch("https://high-ace-421114.et.r.appspot.com/askQuestion/" + message.value + "/model=" + aiModel.value)
+  if (!jumlahRekomendasi.value) {
+    jumlahRekomendasi.value = 3;
+  }
+  const url="http://localhost:3000/getBUMDCandidate/" + message.value + "/"+Number(jumlahRekomendasi.value)
+  // const url = "https://high-ace-421114.et.r.appspot.com/getBUMDCandidate/" + message.value + "/" + Number(jumlahRekomendasi.value);
 
+  try {
+    console.log("url:", url);
+    const query = await fetch(url);
+    if (query.status != 200) {
+      error.value = `Error:  ${query.status}`;
+      loading.value = false;
+      return;
+      throw new Error(String(query.status));
+    }
+
+    const candidate = await query.json();
+
+    if (!candidate?.bumdCandidate) {
+      console.log("Error no answer is given");
+      throw new Error("Error no answer is given");
+    }
+
+    loading.value = false;
+
+    return candidate.bumdCandidate;
+  } catch (err) {
+    console.log("error:", err);
+    error.value = JSON.stringify(err);
+    console.log(error.value);
+    loading.value = false;
+    throw new Error(JSON.stringify(err));
+  }
+}
 const sendMessage = async () => {
   console.log(error.value);
 
   console.log("in sendMessage");
   jawaban.value = [];
-  error.value= "";
+  error.value = "";
   if (message.value != "") {
     message.value;
     console.log("query:", message.value);
@@ -90,9 +172,11 @@ const sendMessage = async () => {
     // const query = await fetch("https://high-ace-421114.et.r.appspot.com/askQuestion/" + message.value);
 
     console.log(error.value);
+    loading.value = true;
 
     // const query = await fetch("http://localhost:3000/askDummy/")
-    const query = await fetch("https://high-ace-421114.et.r.appspot.com/askQuestion/" + message.value)
+    // const query = await fetch("https://high-ace-421114.et.r.appspot.com/askQuestion/" + message.value + "/model=" + aiModel.value)
+    const query = await fetch("https://high-ace-421114.et.r.appspot.com/askQuestion/" + message.value + "/" + aiModel.value)
       .then(async (query) => {
         if (query.status != 200) {
           console.log("Error: ", query.status);
@@ -101,9 +185,14 @@ const sendMessage = async () => {
         }
         console.log("query:", query);
         const answers = await query.json();
-        console.log("answers:", answers);
+        console.log("answers:", JSON.stringify(answers));
         // score: answer.penjelasan.match(/\*\* Skor \*\*:(.+?)\*\*/)[1]
 
+        if (answers?.length < 1) {
+          console.log("Error no answer is given");
+          error.value = `Error no answer is given`;
+          return;
+        }
         const convertedAnswers = answers.map((answer: any) => {
           const regexScore = /(\d+)%/;
           const cobaExtractScore = answer.penjelasan.match(regexScore);
@@ -154,13 +243,16 @@ const sendMessage = async () => {
           };
         });
         const sortedAnswers = convertedAnswers.sort((a: any, b: any) => b.scoreNum - a.scoreNum);
+        loading.value = false;
 
         jawaban.value = sortedAnswers;
       })
       .catch((err) => {
-        console.log("oops error: ",err.message);
-        error.value=err
+        console.log("oops error: ", err.message);
+        error.value = err;
         console.log(error.value);
+        loading.value = false;
+
         return;
       });
 
@@ -225,7 +317,7 @@ input[type="text"] {
 }
 
 .button-ask {
-  background-color: #007bff;
+  background-color: #4f8383;
   color: #fff;
   border: none;
   padding: 0 20px;
@@ -366,5 +458,37 @@ h1.card_title {
 }
 .margin_right {
   margin-right: 5px;
+}
+.loader {
+  margin-top: 200px;
+  margin-left: 450px;
+}
+
+.loading-container {
+  display: flex;
+  justify-content: center;
+  margin: 0 auto;
+  width: 100px;
+}
+.loading_image {
+  margin-top: 50px;
+  width: 200px;
+}
+
+@keyframes blink {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+p.blinking {
+  animation: blink 1s infinite;
+  color: #4f8383;
 }
 </style>
