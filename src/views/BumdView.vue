@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="main_container">
     <div class="flex_row padding20 flex_end max_width centered_div top_banner">
       <div>
         <h1 class="main_tittle">Matching <span class="green_color">BUMD </span></h1>
@@ -145,8 +145,8 @@ class Bumd {
     try {
       
       // const url = `https://high-ace-421114.et.r.appspot.com/evaluasiBUMD/${bumd.id}/${query}`;
-      const url = `http://localhost:3000/evaluasiBUMD/${this.bumd.id}/${this.query}/${aiModel.value}`;
-      // const url = `https://ringkasan.net/evaluasiBUMD/${this.bumd.id}/${this.query}`;
+      // const url = `http://localhost:3000/evaluasiBUMD/${this.bumd.id}/${this.query}/${aiModel.value}`;
+      const url = `https://ringkasan.net/evaluasiBUMD/${this.bumd.id}/${this.query}/${aiModel.value}`;
 
       console.log("fetching data from:", url);
       let buffer = "";
@@ -282,6 +282,13 @@ async function getBUMDCandidate(): Promise<bumdInterface[]> {
 </script>
 
 <style scoped>
+.main_container{
+  background-image: url("../assets/19449741.jpg");
+  background-repeat: repeat-x;
+  background-size: cover;
+  background-position: top;
+  min-height:100vh;
+}
 .chat-app {
   width: 100%;
   margin: 0 auto;
