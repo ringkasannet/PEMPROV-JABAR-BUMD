@@ -10,18 +10,17 @@
       </Transition>
     </div>
     <div v-if="error" class="error-message">{{ error }}</div>
-    <button @click="rubahUrutanKandidat">Rubah urutan</button>
     <Transition name="fade" appear>
       <div class="chat_container">
         <div class="chat-app">
           <div class="admin_container" style="">
             <div class="admin_item" style="display: flex; justify-content: flex-end">
               <div style="padding-top: 5px">Model:</div>
-              <v-select v-model="aiModel" style="width: 200px" :options="['OpenAi', 'GeminiAi']"></v-select>
+              <v-select v-model="aiModel" style="width: 200px; margin-left:5px" :options="['OpenAi', 'GeminiAi']"></v-select>
             </div>
             <div style="display: flex; justify-content: flex-end">
-              <div style="padding-top: 5px">Jumlah Rekomendasi:</div>
-              <v-select v-model="jumlahRekomendasi" style="width: 100px" :options="[1, 2, 3, 4, 5]"></v-select>
+              <div style="padding-top: 5px;margin-left:5px;">Jumlah Rekomendasi:</div>
+              <v-select v-model="jumlahRekomendasi" style="width: 100px;margin-left:5px;" :options="[1, 2, 3, 4, 5]"></v-select>
             </div>
           </div>
 
@@ -38,106 +37,193 @@
         </div>
 
         <div class="candidate_container" style="display: flex; flex-direction: column; margin-top: 20px">
-          <div v-for="(candidate,index) in bumdCandidate" :key="index">
-            {{ candidate.score }}
-            <Transition name="fade" appear>
-              <itemRekomendasiBUMD @gotScore="prosesScore" :bumdId="candidate.id" :bumdName="candidate.name" :query="message" />
-            </Transition>
-          </div>
+          <TransitionGroup name="list" tag="ul" style="display:block;padding:0 20px">
+            <li v-for="(candidate, index) in bumdCandidate" :key="index" style="list-style-type:none;">
+              <!-- {{ candidate.bumd.name }}
+            {{ candidate.bumd.id }} -->
+              <Transition name="fade" appear>
+                <itemRekomendasiBUMD :bumdId="candidate.bumd.id" :bumdName="candidate.bumd.name" :penjelasanAi="candidate.penjelasanAi" :penjelasanAiShort="candidate.penjelasanAiShort" :score=candidate.score :query="message" />
+              </Transition>
+            </li>
+          </TransitionGroup>
         </div>
-        <!-- <div v-if="jawaban.length > 0">
-          <div class="answer-font" v-for="(result, index) in jawaban" :key="index">
-            <Transition name="fade" appear>
-              <div class="penjelasan">
-                <h1 class="card_title">{{ result?.name }} <br /></h1>
-                <h2>
-                  Persentase Kesesuaian: <span>{{ result?.score }}</span>
-                </h2>
-                <div v-if="result.desc">
-                  <vue-markdown :source="result?.desc" />
-                </div>
-              </div>
-            </Transition>
-          </div>
-        </div> -->
       </div>
     </Transition>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { reactive, ref, watch } from "vue";
 import VueMarkdown from "vue-markdown-render";
 import vSelect from "vue-select";
 import "vue-select/dist/vue-select.css";
 import itemRekomendasiBUMD from "../components/ItemRekomendasiBUMD.vue";
-// const PulseLoader = require('vue-spinner/src/PulseLoader.vue');
 
-// import PulseLoader from 'vue-spinner/src/PulseLoader.vue'
-// import PulseLoader from 'vue-spinner/src/PulseLoader.vue'
-function prosesScore(score:{id:string, score:number}) {
-  console.log("dapat score:", score, "untuk id:", score.id);
-  for (let i = 0; i < bumdCandidate.value.length; i++) {
-    if (bumdCandidate.value[i].id === score.id) {
-      bumdCandidate.value[i].score = score.score;
-    }
-  }
-  // const cand=bumdCandidate.value.find((item) => item.id === score.id);
-  // console.log("merubah BUMD: ",cand?.name," dengan skor: ",score.score)
-  // if (cand) {
-  //   cand.score = score.score;
-  // }
-  bumdCandidate.value.sort((a, b) => b.score - a.score);
-}
-
-function rubahUrutanKandidat() {
-  console.log("rubah urutan kandidat");
-  console.log("sebelum diurutkan:",JSON.stringify(bumdCandidate.value));
-
-  bumdCandidate.value.sort((a, b) => b.score - a.score);
-  console.log("diurutkan:",JSON.stringify(bumdCandidate.value));
-  bumdCandidate.value.sort((a, b) => a.score - b.score);
-  console.log("diurutkan:",JSON.stringify(bumdCandidate.value));
+function urutkanBumd() {
+  console.log('urutkanBumd, sebelum diurutkan:')
+  bumdCandidate.forEach(bumd=>{
+    console.log("1",bumd.bumd.name,bumd.score)
+  })
+  console.log('urutkanBumd, setelah diurutkan:')
+  bumdCandidate.sort((a, b) => b.score - a.score);
+  bumdCandidate.forEach(bumd=>{
+    console.log("1",bumd.bumd.name,bumd.score)
+  })
 
 }
 
-interface itemJawaban {
-  name: string;
-  id: string;
-  score: string;
-  desc: string;
-  scoreNum: number;
-}
-interface bumdCandidateInterface {
+
+interface bumdInterface {
   id: string;
   name: string;
   desc: string;
   perda: string;
   score: number;
 }
+
+class Bumd {
+  public bumd: bumdInterface;
+  
+  public query: string;
+  public penjelasanAi: string = "";
+  public penjelasanAiShort: string = "";
+  public score: number = NaN;
+
+  private controller = new AbortController();
+  private signal = this.controller.signal;
+  private showReadMore = false;
+  private scoreSent=false;
+
+  constructor(bumd: bumdInterface, query: string) {
+    this.bumd = bumd;
+    this.query = query;
+    // this.evaluasiBUMD();
+  }
+
+  rubahNama() {
+    this.bumd.name = "BUMD nama dirubah";
+  }
+
+  abortFetch() {
+    console.log("Aborting fetch for", this.bumd.name);
+    this.controller.abort();
+  }
+
+  getScore():number {
+    if (this.scoreSent) return NaN
+    const regexScore = /(\d+)%/;
+    const cobaExtractScore = this.penjelasanAiShort.match(regexScore);
+    let scoreExtracted;
+    if (cobaExtractScore) {
+      console.log("Get scoreExtracted:", cobaExtractScore[1], "id:", this.bumd.name, "to number:",Number(cobaExtractScore[1]));
+      console.log(this.penjelasanAiShort);
+      this.score=Number(cobaExtractScore[1])
+      this.scoreSent=true;
+      return Number(cobaExtractScore[1]);
+    } else {
+      return NaN;
+    }
+  }
+  addPenjelasanAi(text: string) {
+    // console.log('setting penjelasan AI:',text)
+    this.penjelasanAi += text;
+    let score=this.getScore();
+    if (score){
+      console.log("Get scoreExtracted:", score);
+
+      this.score = score;
+      urutkanBumd();
+    }
+  }
+
+  addPenjelasanAiShort(text: string) {
+    this.penjelasanAiShort += text;
+  }
+
+  async evaluasiBUMD() {
+    console.log("about to evaluate bumd:", this.bumd.id, this.query);
+    try {
+      
+      // const url = `https://high-ace-421114.et.r.appspot.com/evaluasiBUMD/${bumd.id}/${query}`;
+      const url = `http://localhost:3000/evaluasiBUMD/${this.bumd.id}/${this.query}/${aiModel.value}`;
+      // const url = `https://ringkasan.net/evaluasiBUMD/${this.bumd.id}/${this.query}`;
+
+      console.log("fetching data from:", url);
+      let buffer = "";
+      const evaluationQuery = fetch(url, { signal: this.signal })
+        .then((response) => {
+          console.log("response:", response);
+          loading.value = false;
+          if (!response.body) {
+            console.error("No response body");
+            this.penjelasanAi = "No response body";
+            this.penjelasanAiShort = "No response body";
+          } else {
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder(); // Assuming text data
+
+            const readChunk = async () => {
+              const { value, done } = await reader.read();
+              if (done) {
+                return;
+              }
+              const chunkString = decoder.decode(value);
+              // console.log("penjelasan AI: ",this.penjelasanAi)
+              // console.log(chunkString); // Process the chunk
+              buffer += chunkString;
+              this.addPenjelasanAi(chunkString);
+              if (this.penjelasanAiShort.length < 700) {
+                this.addPenjelasanAiShort(chunkString);
+              } else {
+                this.showReadMore = true;
+              }
+
+              readChunk(); // Read the next chunk
+            };
+            readChunk();
+          }
+        })
+        .catch((error) => {
+          console.error("Error fetching data:", error);
+        });
+    } catch (err) {
+      console.log("error:", err);
+      loading.value = false;
+      throw new Error(JSON.stringify(err));
+    }
+  }
+}
+
 const message = ref("");
 const error = ref("");
 const submittedMessage = ref("");
-const jawaban = ref<itemJawaban[]>([]);
 const streamingText = ref([]);
 const responseError = ref(false);
 const loading = ref(false);
-const aiModel = ref("OpenAi");
-const bumdCandidate = ref<bumdCandidateInterface[]>([]);
+const aiModel = ref("GeminiAi");
+const bumdCandidate = reactive<Bumd[]>([]);
 const jumlahRekomendasi = ref(3);
-
 
 async function processQuerry() {
   loading.value = true;
-  bumdCandidate.value = [];
   if (!message.value) {
     console.log("query is empty, returning:");
   }
   console.log("query: ", message.value, "aiModel:", aiModel.value);
   try {
+    if (bumdCandidate.length > 0) {
+      bumdCandidate.map((item) => {
+        item.abortFetch();
+      });
+      bumdCandidate.splice(0, bumdCandidate.length);
+    }
     const res = await getBUMDCandidate();
-    bumdCandidate.value = res;
-    console.log("bumdCandidate:", bumdCandidate.value);
+    res.map((bumd: bumdInterface) => {
+      bumdCandidate.push(new Bumd(bumd, message.value));
+    });
+    bumdCandidate.map((item) => {
+      item.evaluasiBUMD();
+    });
   } catch (err) {
     console.log("error:", err);
     error.value = JSON.stringify(err);
@@ -145,19 +231,16 @@ async function processQuerry() {
   }
   loading.value = false;
 }
-async function getBUMDCandidate() {
+async function getBUMDCandidate(): Promise<bumdInterface[]> {
   console.log("in getBUMDCandidate");
-  jawaban.value = [];
   error.value = "";
 
-  // const query = await fetch("http://localhost:3000/askDummy/")
-  // const query = await fetch("https://high-ace-421114.et.r.appspot.com/askQuestion/" + message.value + "/model=" + aiModel.value)
   if (!jumlahRekomendasi.value) {
     jumlahRekomendasi.value = 3;
   }
-  const url = "http://localhost:3000/getBUMDCandidate/" + message.value + "/" + Number(jumlahRekomendasi.value);
+  // const url = "http://localhost:3000/getBUMDCandidate/" + message.value + "/" + Number(jumlahRekomendasi.value);
 
-  // const url = "https://ringkasan.net/getBUMDCandidate/" + message.value + "/" + Number(jumlahRekomendasi.value);
+  const url = "https://ringkasan.net/getBUMDCandidate/" + message.value + "/" + Number(jumlahRekomendasi.value);
   // const url = "https://high-ace-421114.et.r.appspot.com/getBUMDCandidate/" + message.value + "/" + Number(jumlahRekomendasi.value);
 
   try {
@@ -184,7 +267,7 @@ async function getBUMDCandidate() {
         name: item.name,
         desc: item.desc,
         perda: item.perda,
-        score: null,
+        score: 0,
       };
     });
   } catch (err) {
@@ -196,7 +279,6 @@ async function getBUMDCandidate() {
     throw new Error(JSON.stringify(err));
   }
 }
-
 </script>
 
 <style scoped>
@@ -238,7 +320,7 @@ input[type="text"] {
 }
 
 .button-ask:hover {
-  background-color: #0056b3;
+  background-color: #396060;
 }
 
 .error-message {
@@ -407,6 +489,25 @@ p.blinking {
   flex-direction: row;
   justify-content: end;
   margin-right: 20px;
+}
+
+ /* apply transition to moving elements */
+.list-enter-active,
+.list-leave-active,
+.list-move{
+  transition: all 0.5s ease;
+}
+
+.list-enter-from,
+.list-leave-to {
+  opacity: 0;
+  transform: translateX(20px);
+}
+
+/* ensure leaving items are taken out of layout flow so that moving
+   animations can be calculated correctly. */
+.list-leave-active {
+  position: absolute;
 }
 
 @media (max-width: 600px) {
