@@ -10,12 +10,12 @@
       </Transition>
     </div>
     <div v-if="error" class="error-message">{{ error }}</div>
-
+    <button @click="rubahUrutanKandidat">Rubah urutan</button>
     <Transition name="fade" appear>
       <div class="chat_container">
         <div class="chat-app">
           <div class="admin_container" style="">
-            <div style="display: flex; justify-content: flex-end; margin-right: 10px">
+            <div class="admin_item" style="display: flex; justify-content: flex-end">
               <div style="padding-top: 5px">Model:</div>
               <v-select v-model="aiModel" style="width: 200px" :options="['OpenAi', 'GeminiAi']"></v-select>
             </div>
@@ -38,9 +38,10 @@
         </div>
 
         <div class="candidate_container" style="display: flex; flex-direction: column; margin-top: 20px">
-          <div v-for="(candidate, index) in bumdCandidate" :key="index">
+          <div v-for="(candidate,index) in bumdCandidate" :key="index">
+            {{ candidate.score }}
             <Transition name="fade" appear>
-              <itemRekomendasiBUMD :bumd="candidate" :query="message" />
+              <itemRekomendasiBUMD @gotScore="prosesScore" :bumdId="candidate.id" :bumdName="candidate.name" :query="message" />
             </Transition>
           </div>
         </div>
@@ -74,6 +75,31 @@ import itemRekomendasiBUMD from "../components/ItemRekomendasiBUMD.vue";
 
 // import PulseLoader from 'vue-spinner/src/PulseLoader.vue'
 // import PulseLoader from 'vue-spinner/src/PulseLoader.vue'
+function prosesScore(score:{id:string, score:number}) {
+  console.log("dapat score:", score, "untuk id:", score.id);
+  for (let i = 0; i < bumdCandidate.value.length; i++) {
+    if (bumdCandidate.value[i].id === score.id) {
+      bumdCandidate.value[i].score = score.score;
+    }
+  }
+  // const cand=bumdCandidate.value.find((item) => item.id === score.id);
+  // console.log("merubah BUMD: ",cand?.name," dengan skor: ",score.score)
+  // if (cand) {
+  //   cand.score = score.score;
+  // }
+  bumdCandidate.value.sort((a, b) => b.score - a.score);
+}
+
+function rubahUrutanKandidat() {
+  console.log("rubah urutan kandidat");
+  console.log("sebelum diurutkan:",JSON.stringify(bumdCandidate.value));
+
+  bumdCandidate.value.sort((a, b) => b.score - a.score);
+  console.log("diurutkan:",JSON.stringify(bumdCandidate.value));
+  bumdCandidate.value.sort((a, b) => a.score - b.score);
+  console.log("diurutkan:",JSON.stringify(bumdCandidate.value));
+
+}
 
 interface itemJawaban {
   name: string;
@@ -82,11 +108,12 @@ interface itemJawaban {
   desc: string;
   scoreNum: number;
 }
-interface bumdCandidate {
+interface bumdCandidateInterface {
   id: string;
   name: string;
   desc: string;
   perda: string;
+  score: number;
 }
 const message = ref("");
 const error = ref("");
@@ -96,8 +123,9 @@ const streamingText = ref([]);
 const responseError = ref(false);
 const loading = ref(false);
 const aiModel = ref("OpenAi");
-const bumdCandidate = ref<bumdCandidate[]>([]);
+const bumdCandidate = ref<bumdCandidateInterface[]>([]);
 const jumlahRekomendasi = ref(3);
+
 
 async function processQuerry() {
   loading.value = true;
@@ -127,18 +155,18 @@ async function getBUMDCandidate() {
   if (!jumlahRekomendasi.value) {
     jumlahRekomendasi.value = 3;
   }
-  // const url="http://localhost:3000/getBUMDCandidate/" + message.value + "/"+Number(jumlahRekomendasi.value)
+  const url = "http://localhost:3000/getBUMDCandidate/" + message.value + "/" + Number(jumlahRekomendasi.value);
 
-  const url = "https://ringkasan.net/getBUMDCandidate/" + message.value + "/" + Number(jumlahRekomendasi.value);
+  // const url = "https://ringkasan.net/getBUMDCandidate/" + message.value + "/" + Number(jumlahRekomendasi.value);
   // const url = "https://high-ace-421114.et.r.appspot.com/getBUMDCandidate/" + message.value + "/" + Number(jumlahRekomendasi.value);
 
   try {
-    console.log("url:", url);
+    console.log("fetching url:", url);
     const query = await fetch(url);
+    console.log("query:", query);
     if (query.status != 200) {
       error.value = `Error:  ${query.status}`;
       loading.value = false;
-      return;
       throw new Error(String(query.status));
     }
 
@@ -150,145 +178,25 @@ async function getBUMDCandidate() {
     }
 
     loading.value = false;
-
-    return candidate.bumdCandidate;
+    return candidate.bumdCandidate.map((item: any) => {
+      return {
+        id: item.id,
+        name: item.name,
+        desc: item.desc,
+        perda: item.perda,
+        score: null,
+      };
+    });
   } catch (err) {
     console.log("error:", err);
     error.value = JSON.stringify(err);
     console.log(error.value);
     loading.value = false;
+
     throw new Error(JSON.stringify(err));
   }
 }
-const sendMessage = async () => {
-  console.log(error.value);
 
-  console.log("in sendMessage");
-  jawaban.value = [];
-  error.value = "";
-  if (message.value != "") {
-    message.value;
-    console.log("query:", message.value);
-    console.log("error:", error.value);
-
-    // const query = await fetch("https://high-ace-421114.et.r.appspot.com/askQuestion/" + message.value);
-
-    console.log(error.value);
-    loading.value = true;
-
-    // const query = await fetch("http://localhost:3000/askDummy/")
-    // const query = await fetch("https://high-ace-421114.et.r.appspot.com/askQuestion/" + message.value + "/model=" + aiModel.value)
-    const query = await fetch("https://high-ace-421114.et.r.appspot.com/askQuestion/" + message.value + "/" + aiModel.value)
-      .then(async (query) => {
-        if (query.status != 200) {
-          console.log("Error: ", query.status);
-          error.value = `Error:  ${query.status}`;
-          return;
-        }
-        console.log("query:", query);
-        const answers = await query.json();
-        console.log("answers:", JSON.stringify(answers));
-        // score: answer.penjelasan.match(/\*\* Skor \*\*:(.+?)\*\*/)[1]
-
-        if (answers?.length < 1) {
-          console.log("Error no answer is given");
-          error.value = `Error no answer is given`;
-          return;
-        }
-        const convertedAnswers = answers.map((answer: any) => {
-          const regexScore = /(\d+)%/;
-          const cobaExtractScore = answer.penjelasan.match(regexScore);
-          // console.log("scoreExtracted:", cobaExtractScore);
-          let scoreExtracted;
-          if (cobaExtractScore) {
-            scoreExtracted = cobaExtractScore[1];
-          } else {
-            scoreExtracted = "Not Found";
-          }
-          // D. Penjelasan:
-          // const regexPenjelasan = /D\.\s*Penjelasan:\s*(.*)/i;
-          // const regexPenjelasan = /D\. Penjelasan:\s(.*)/;
-          // const cobaExtractPenjelasan = answer.penjelasan.match(regexPenjelasan);
-          // console.log("Penjelasan asli:", answer.penjelasan);
-          // let penjelasanExtracted;
-          // if (cobaExtractPenjelasan) {
-          //   penjelasanExtracted = cobaExtractPenjelasan[1];
-          //   console.log("Penjelasan Extracted:", cobaExtractPenjelasan[1]);
-          // } else {
-          //   penjelasanExtracted = "Not Found";
-          //   console.log("Penjelasan Extracted not found");
-          // }
-
-          const targetString = "D. Penjelasan:";
-          const startIndex = answer.penjelasan.indexOf(targetString) + targetString.length;
-          const penjelasanExtracted = answer.penjelasan.substring(startIndex).trim();
-
-          console.log("penjelasan extracted: ", penjelasanExtracted); // Output: This is the explanation text.
-          // const searchStringPenjelasan = "D. Penjelasan: ";
-          // console.log('answer.penjelasan:', answer.penjelasan)
-          // const indexPenjelasan = answer.penjelasan.indexOf(searchStringPenjelasan);
-          // console.log('indexPenjelasan:', indexPenjelasan)
-          // let penjelasanText
-          // if (indexPenjelasan !== -1) {
-          //    penjelasanText = text.substring(index + searchString.length); // Extract from after "D. Penjelasan: "
-          // } else {
-          //   console.log('"D. Penjelasan: " not found in the text.');
-          // }
-          const scoreNum = parseInt(scoreExtracted);
-
-          return {
-            name: answer.name,
-            _id: answer._id,
-            score: `${scoreExtracted}%`,
-            desc: penjelasanExtracted,
-            scoreNum: scoreNum ? scoreNum : 0,
-          };
-        });
-        const sortedAnswers = convertedAnswers.sort((a: any, b: any) => b.scoreNum - a.scoreNum);
-        loading.value = false;
-
-        jawaban.value = sortedAnswers;
-      })
-      .catch((err) => {
-        console.log("oops error: ", err.message);
-        error.value = err;
-        console.log(error.value);
-        loading.value = false;
-
-        return;
-      });
-
-    // startStreaming();
-  } else {
-    // error.value = "Input tidak boleh kosong";
-  }
-};
-
-// const startStreaming = () => {
-//   jawaban.value.forEach((result, index) => {
-//     const words = result.penjelasan.split(' ');
-//     let currentText = '';
-//     words.forEach((word, wordIndex) => {
-//       setTimeout(() => {
-//         currentText += word + ' ';
-//         streamingText.value[index] = currentText;
-//       }, wordIndex * 65);
-//     });
-//   });
-// };
-
-// const startStreaming = () => {
-//   jawaban.value.forEach((result, index) => {
-//     const words = result.penjelasan.split(" ");
-//     let currentText = "";
-//     words.forEach((word, wordIndex) => {
-//       setTimeout(() => {
-//         currentText += word + " ";
-//         streamingText.value[index] = currentText.replace(/\*\* Skor \*\*:.+?\*\* Penjelasan \*\*:/, "").replace(/\*\*[\w\s]+?\*\*/, "");
-//       }, wordIndex * 65);
-//     });
-//   });
-// };
 </script>
 
 <style scoped>
@@ -302,6 +210,7 @@ const sendMessage = async () => {
   display: flex;
   align-items: center;
   position: relative;
+  margin: 0 20px;
 }
 
 input[type="text"],
@@ -412,7 +321,7 @@ h1.main_tittle {
 h2.main_tittle {
   font-family: Helvetica;
   font-weight: normal;
-  font-size: 4em;
+  font-size: 2em;
   margin: 0;
   padding: 0;
 }
@@ -493,9 +402,13 @@ p.blinking {
   animation: blink 1s infinite;
   color: #4f8383;
 }
-.admin_container{
-  display: flex; flex-direction: row; justify-content: end;
+.admin_container {
+  display: flex;
+  flex-direction: row;
+  justify-content: end;
+  margin-right: 20px;
 }
+
 @media (max-width: 600px) {
   h1.main_tittle {
     font-family: Helvetica;
@@ -518,13 +431,15 @@ p.blinking {
     color: rgb(0, 0, 79);
   }
   .card_image {
-  width: 100px;
-  margin-left: 40px;
-}
-.admin_container{
-  display:flex;
-  flex-direction: column;
-}
-
+    width: 100px;
+    margin-left: 40px;
+  }
+  .admin_container {
+    display: flex;
+    flex-direction: column;
+  }
+  .admin_item {
+    margin-bottom: 5px;
+  }
 }
 </style>

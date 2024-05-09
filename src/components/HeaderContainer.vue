@@ -1,6 +1,6 @@
 <template>
     <div id="header_container" class="header_container">
-      <div class="logo_container"> 
+      <div class="logo_container" @click=""> 
         <img src="/Logo Pemprov Jabar.png" alt="Logo"
          style=
           "max-width: 40px;
@@ -9,7 +9,7 @@
            ">
       </div>
       <div id="tittle_logo" class="pemprov_container">
-        <h3> Pemerintah <br> Provinsi Jawa Barat </h3>
+        <h3> <RouterLink to="/"> Pemerintah <br> Provinsi Jawa Barat </RouterLink></h3>
       </div>
       <div class="menu_container" >
         <div class="menu_item"> <RouterLink class="put_low" to="/">Home</RouterLink> </div>
@@ -102,8 +102,16 @@ a{
 #tittle_logo {
     margin: 10px;
 }
+.pemprov_container{
+  cursor: pointer;
 
-@media (max-width: 600px) {
+}
+
+.pemprov_container:hover{
+  background-color: white;
+}
+
+@media (max-width: 850px) {
   .menu_container{
     display:none
   }
