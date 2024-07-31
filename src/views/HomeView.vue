@@ -11,7 +11,7 @@
           <img class="card_image" src="../assets/infographic.gif" alt="" />
           <p>Sistem pintar yang dapat membantu memetakan potensi penugasan BUMD sesuai dengan Tujuan dan Ruang Lingkup Pendirian</p>
         </div>
-        <div class="tools_card">
+        <div class="tools_card" @click="navigateToAset">
           <h2 class="card_title">Chatbot Pemanfaatan Aset</h2>
           <img class="card_image" src="../assets/sun.gif" alt="" />
           <p>Asisten pintar yang dapat membantu menjawab pertanyaan terkait peraturan dan kebijakan terkait pemanfaatan aset</p>
@@ -34,6 +34,11 @@ const router = useRouter();
 function navigateToBUMD() {
   console.log("navigateToBUMD");
   router.push("/bumd");
+}
+
+function navigateToAset(){
+  console.log("navigateToAset");
+  router.push("/aset");
 }
 function click() {
   console.log("clicked");
