@@ -13,7 +13,7 @@
     </div>
     <div class="menu_container">
       <div class="menu_item"><RouterLink class="put_low" to="/">Home</RouterLink></div>
-      <div class="menu_item"><RouterLink class="put_low" to="/">Admin</RouterLink></div>
+      <div class="menu_item"><RouterLink class="put_low" to="/admin">Admin</RouterLink></div>
       <div class="menu_item"><RouterLink class="put_low" to="/">Documentation</RouterLink></div>
       <div class="menu_item"><RouterLink class="put_low" to="/">Source Code</RouterLink></div>
       <div class="menu_item">
@@ -28,7 +28,10 @@
   </div>
 </template>
 
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import { RouterLink } from 'vue-router';
+
+</script>
 
 <style scoped>
 .header_container {
@@ -120,9 +123,9 @@ a {
   h3 {
     font-size: 0.9em;
   }
-  .header_container {
-    /* background-color: rgb(240, 240, 240); */
-  }
+  /* .header_container {
+    background-color: rgb(240, 240, 240);
+  } */
   .logo_container {
   max-width: 40px;
   margin: 5px;

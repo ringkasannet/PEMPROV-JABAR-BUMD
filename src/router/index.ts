@@ -1,8 +1,10 @@
-import { createRouter, createWebHistory } from 'vue-router'
-import HomeView from '../views/HomeView.vue' 
-import BumdView from '../views/BumdView.vue' 
-import AsetView from '@/views/AsetView.vue'
-console.log("in router/index.ts")
+import { createRouter, createWebHistory } from 'vue-router';
+import HomeView from '../views/HomeView.vue';
+import BumdView from '../views/BumdView.vue';
+import AsetView from '../views/AsetView.vue';
+import AdminView from '../views/AdminView.vue';
+import InputDokumenView from '../views/InputDokumenView.vue';
+
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -14,19 +16,24 @@ const router = createRouter({
     {
       path: '/bumd',
       name: 'bumd',
-      // route level code-splitting
-      // this generates a separate chunk (About.[hash].js) for this route
-      // which is lazy-loaded when the route is visited.
-      component: BumdView
+      component: BumdView,
     },
     {
       path: '/aset',
       name: 'aset',
       component: AsetView,
     },
+    {
+      path: '/admin',
+      name: 'admin',
+      component: AdminView,
+    },
+    {
+      path: '/InputDokumen',
+      name: 'inputDokumen',
+      component: InputDokumenView,
+    },
+  ],
+});
 
-
-  ]
-})
-
-export default router
+export default router;
