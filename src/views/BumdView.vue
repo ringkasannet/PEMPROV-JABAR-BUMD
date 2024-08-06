@@ -5,7 +5,7 @@
         <h1 class="main_tittle">Matching <span class="green_color">BUMD </span></h1>
         <h2 class="main_tittle text_right">Pemetaan kesesuaian penugasan BUMD</h2>
       </div>
-      <Transition name="rotate" appear>
+      <Transition name="rotate" appear >
         <img class="card_image" src="../assets/infographic.png" alt="" />
       </Transition>
     </div>
@@ -71,7 +71,6 @@ function urutkanBumd() {
   })
 
 }
-
 
 interface bumdInterface {
   id: string;

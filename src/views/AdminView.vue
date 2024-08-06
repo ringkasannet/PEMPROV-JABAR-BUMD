@@ -6,16 +6,16 @@
         <h2 class="main_tittle right_aligned_text">Pemerintah Provinsi Jawa Barat</h2>
       </div>
       <div class="tools_card_container">
-        <div class="tools_card" @click="navigateToFormDokumen">
-          <h2 class="card_title">Tambahkan Dokumen Hukum</h2>
-          <!-- <img class="card_image" src="../assets/infographic.gif" alt="" /> -->
+        <div class="tools_card" @click="navigateToListBumdDokumenView">
+          <h2 class="card_title">List Dokumen BUMD</h2>
+          <img class="card_image" src="../assets/infographic.gif" alt="" />
           <p></p>
         </div>
-        <!-- <div class="tools_card" @click="navigateToAset">
-            <h2 class="card_title">Buat Prompt</h2>
-            <img class="card_image" src="../assets/sun.gif" alt="" />
-            <p></p>
-          </div> -->
+        <div class="tools_card" @click="navigateToListAsetDokumenView">
+          <h2 class="card_title">List Dokumen Aset</h2>
+          <img class="card_image" src="../assets/sun.gif" alt="" />
+          <p></p>
+        </div>
       </div>
     </div>
   </div>
@@ -26,14 +26,13 @@ import { useRouter } from "vue-router";
 
 const router = useRouter();
 
-function navigateToFormDokumen() {
-  router.push("/InputDokumen");
+function navigateToListBumdDokumenView() {
+  router.push("/ListDokumenBUMD");
 }
 
-// function navigateToAset() {
-//   console.log("navigateToAset");
-//   router.push("/aset");
-// }
+function navigateToListAsetDokumenView() {
+  router.push("/ListDokumenAset");
+}
 </script>
 
 <style scoped>

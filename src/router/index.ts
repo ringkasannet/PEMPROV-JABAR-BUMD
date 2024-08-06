@@ -3,7 +3,10 @@ import HomeView from '../views/HomeView.vue';
 import BumdView from '../views/BumdView.vue';
 import AsetView from '../views/AsetView.vue';
 import AdminView from '../views/AdminView.vue';
-import InputDokumenView from '../views/InputDokumenView.vue';
+import InputDokumenAsetView from '../views/InputDokumenAsetView.vue';
+import InputDokumenBumdView from '../views/InputDokumenBumdView.vue';
+import ListDokumenBUMDView from '../views/ListDokumenBUMDView.vue';
+import ListDokumenAsetView from '../views/ListDokumenAsetView.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -29,9 +32,24 @@ const router = createRouter({
       component: AdminView,
     },
     {
-      path: '/InputDokumen',
-      name: 'inputDokumen',
-      component: InputDokumenView,
+      path: '/inputDokumenAset',
+      name: 'inputDokumenAset',
+      component: InputDokumenAsetView,
+    },
+    {
+      path: '/inputDokumenBumd',
+      name: 'inputDokumenBumd',
+      component: InputDokumenBumdView,
+    },
+    {
+      path: '/listDokumenBUMD',
+      name: 'listDokumenBUMD',
+      component: ListDokumenBUMDView,
+    },
+    {
+      path: '/listDokumenAset',
+      name: 'listDokumenAset',
+      component: ListDokumenAsetView,
     },
   ],
 });
