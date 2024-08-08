@@ -49,7 +49,7 @@
               <input id="nama_bagian" type="text" v-model="formData.nama_bagian" :disabled="!formData.no_bagian"
                 placeholder="Nomor Bagian Harus Diisi" :required="formData.no_bagian">
             </div>
-            <div class="form-group">
+            <!-- <div class="form-group">
               <label for="no_paragraf">Nomor Paragraf:</label>
               <input id="no_paragraf" type="text" v-model.number="formData.no_paragraf"
                 placeholder="Gunakan angka latin, contoh: 1">
@@ -58,7 +58,7 @@
               <label for="nama_paragraf">Nama Paragraf:</label>
               <input id="nama_paragraf" type="text" v-model="formData.nama_paragraf" :disabled="!formData.no_paragraf"
                 placeholder="Nomor Paragraf Harus Diisi" :required="formData.no_paragraf">
-            </div>
+            </div> -->
             <div class="form-group">
               <label for="desc">Deskripsi:</label>
               <textarea id="desc" v-model="formData.desc"
@@ -72,8 +72,8 @@
     </div>
     <div v-if="isSubmitted" id="success_message">
       <h2>Dokumen berhasil disimpan</h2>
-      <button @click="backToList" id="back_button"> << Kembali</button>
-      <button @click="addNewForm" id="add_button">Tambahkan Dokumen Baru</button>
+      <!-- <button @click="backToList" id="back_button"> << Kembali</button>
+      <button @click="addNewForm" id="add_button">Tambahkan Dokumen Baru</button> -->
     </div>
   </div>
 </template>
@@ -98,8 +98,8 @@ function dataDokumen() {
     nama_bab: '',
     no_bagian: '',
     nama_bagian: '',
-    no_paragraf: '',
-    nama_paragraf: '',
+    // no_paragraf: '',
+    // nama_paragraf: '',
     desc: '',
   };
 }
@@ -121,6 +121,7 @@ async function handleSubmit() {
       loading.value = false;
       console.log(formData);
       isSubmitted.value = true;
+      backToList();
     } catch (error) {
       alert('Failed to submit data');
     }
@@ -140,7 +141,7 @@ function validasiForm() {
     formData.desc &&
     (!formData.no_bagian || formData.nama_bagian) &&
     (!formData.no_paragraf || formData.nama_paragraf)
-  );
+ )
 }
 
 function backToList() {
@@ -158,11 +159,11 @@ watch(() => formData.no_bagian, (newVal) => {
   }
 });
 
-watch(() => formData.no_paragraf, (newVal) => {
-  if (!newVal) {
-    formData.nama_paragraf = '';
-  }
-});
+// watch(() => formData.no_paragraf, (newVal) => {
+//   if (!newVal) {
+//     formData.nama_paragraf = '';
+//   }
+// });
 </script>
 
 <style scoped>
@@ -278,9 +279,15 @@ textarea {
   width: 1000px;
 }
 
-#loading_container {
-  width: 200px;
+.loading-container {
+  display: flex;
+  justify-content: center;
+  margin: 0 auto;
+  width: 100px;
+}
+.loading_image {
   margin-top: 50px;
+  width: 200px;
 }
 
 #success_message {

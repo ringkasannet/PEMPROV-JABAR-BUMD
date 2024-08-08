@@ -44,8 +44,8 @@
       </div>
       <div v-if="isSubmitted" id="success_message">
         <h2>Dokumen berhasil disimpan</h2>
-        <button @click="backToList" id="add_button"> << Kembali</button>
-        <button @click="addNewForm" id="add_button">Tambahkan Dokumen Baru</button>
+        <!-- <button @click="backToList" id="add_button"> << Kembali</button>
+        <button @click="addNewForm" id="add_button">Tambahkan Dokumen Baru</button> -->
       </div>
     </div>
   </div>
@@ -90,6 +90,7 @@ async function handleSubmit() {
       }
       loading.value = false;
       isSubmitted.value = true;
+      backToList()
     } catch (error) {
       alert('Submit data gagal');
       loading.value = false;
@@ -114,10 +115,10 @@ function backToList() {
   route.push("/ListDokumenBUMD");
 }
 
-function addNewForm() {
-  isSubmitted.value = false;
-  formData.value = dataDokumen();
-}
+// function addNewForm() {
+//   isSubmitted.value = false;
+//   formData.value = dataDokumen();
+// }
 </script>
 
 <style scoped>

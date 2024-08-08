@@ -2,18 +2,25 @@
   <div>
     <div id="main_container" class="fadeIn">
       <div class="header_title_container">
-        <h1 class="main_tittle">Dokumen <span class="green_color">BUMD </span></h1>
-        <h2 class="main_tittle">Pemerintah Provinsi Jawa Barat</h2>
+        <h1 class="header_title_container">Dokumen BUMD</h1>
       </div>
       <div v-if="errorMessage" class="error_message">{{ errorMessage }}</div>
       <div v-if="paginatedList.length" class="table_container">
+        <div class="optionButton">
+          <button class="plusButton" @click="navigateToFormDokumen">Tambahkan Dokumen</button>
+          <button class="deleteButton" v-if="!showCheckboxes" @click="showCheckboxes = true">Hapus Dokumen</button>
+          <div v-if="showCheckboxes">
+            <button class="deleteButton" @click="confirmDelete">Delete Selected</button>
+            <button class="cancelButton" @click="cancelSelection">Batalkan</button>
+          </div>
+        </div>
         <table>
           <thead>
             <tr>
               <th>Nama</th>
               <th>Perda</th>
               <th>Deskripsi</th>
-              <th v-if="showCheckboxes"><input type="checkbox" @change="selectAll" class="select_all_checkbox">Select All</th>
+              <th v-if="showCheckboxes"><input type="checkbox" @change="selectAll" class="select_all_checkbox"> Select All</th>
             </tr>
           </thead>
           <tbody>
@@ -39,14 +46,10 @@
           <span>Page {{ currentPage }} of {{ totalPages }}</span>
           <button class="paginationButton" @click="nextPage" :disabled="currentPage === totalPages"> >> </button>
         </div>
-        <div class="optionButton">
-          <button class="plusButton" @click="navigateToFormDokumen">Tambahkan Dokumen</button>
-          <button class="deleteButton" v-if="!showCheckboxes" @click="showCheckboxes = true">Hapus Dokumen</button>
-          <div v-if="showCheckboxes">
-            <button class="deleteButton" @click="confirmDelete">Delete Selected</button>
-            <button class="cancelButton" @click="cancelSelection">Batalkan</button>
-          </div>
-        </div>
+      </div>
+      <div v-else class="no-documents">
+        Belum ada dokumen apapun <br>
+        <button class="plusButton" @click="navigateToFormDokumen">Tambahkan Dokumen</button>
       </div>
     </div>
     <div v-if="showConfirmDialog" class="confirm_dialog">
@@ -113,7 +116,7 @@ const nextPage = () => {
 const deleteDokumen = async () => {
   try {
     const selectedIds = selectedItems.value.map(item => item._id);
-    console.log( selectedIds )
+    console.log(selectedIds);
     const response = await fetch('http://localhost:3000/admin/removeSelectedBUMD', {
       method: 'POST',
       headers: {
@@ -176,8 +179,47 @@ function navigateToFormDokumen() {
 
 .header_title_container {
   padding-top: 20px;
-  margin-bottom: 15px;
+  margin-bottom: 20px;
+  text-align: center;
 }
+
+h1.header_title_container {
+  font-family: Helvetica;
+  font-weight: lighter;
+  font-size: 3em;
+  margin: 0;
+  padding: 0;
+}
+
+.optionButton {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 10px;
+  height: 60px;
+}
+
+.no-documents {
+  text-align: center;
+  font-size: 1.5em;
+  margin-top: 100px;
+  color: #333;
+}
+
+.plusButton {
+  height: 50px;
+  max-width: 200px;
+}
+
+.deleteButton {
+  background-color: red;
+  height: 50px;
+}
+
+.cancelButton {
+  background-color: gray;
+  height: 50px;
+}
+
 
 .table_container {
   margin: 5px auto;
@@ -246,32 +288,11 @@ button:hover {
 .pagination {
   display: flex;
   justify-content: center;
-  margin-top: 20px;
+  margin-top: 50px;
 }
 
 .paginationButton {
   margin: -3px 8px;
-}
-
-.optionButton {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 5px;
-  height: 60px;
-}
-
-.plusButton {
-  margin-right: 10px;
-}
-
-.deleteButton {
-  background-color: red;
-  height: 50px;
-}
-
-.cancelButton {
-  background-color: gray;
-  height: 50px;
 }
 
 .error_message {
