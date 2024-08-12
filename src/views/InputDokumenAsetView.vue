@@ -23,8 +23,7 @@
             </div>
             <div class="form-group">
               <label for="nomor">Nomor Peraturan:</label>
-              <input id="perda" type="text" v-model.number="formData.nomor" placeholder="Contoh: Pergub 78/2014"
-                required>
+              <input id="perda" type="text" v-model.number="formData.nomor" placeholder="Contoh: 78" required>
             </div>
             <div class="form-group">
               <label for="tahun">Tahun:</label>
@@ -42,12 +41,13 @@
             </div>
             <div class="form-group">
               <label for="no_bagian">Nomor Bagian:</label>
-              <input id="no_bagian" type="text" v-model="formData.no_bagian" placeholder="Contoh: Kesatu">
+              <input id="no_bagian" type="text" v-model="formData.no_bagian" @input="toUpperCase"
+                placeholder="Contoh: KESATU">
             </div>
             <div class="form-group">
               <label for="nama_bagian">Nama Bagian:</label>
               <input id="nama_bagian" type="text" v-model="formData.nama_bagian" :disabled="!formData.no_bagian"
-                placeholder="Nomor Bagian Harus Diisi" :required="formData.no_bagian">
+                placeholder="Wajib diisi jika form Nomor Bagian diisi" :required="formData.no_bagian">
             </div>
             <!-- <div class="form-group">
               <label for="no_paragraf">Nomor Paragraf:</label>
@@ -65,7 +65,7 @@
                 placeholder="Contoh: Pasal 1 &#10;        Dalam Peraturan Gubernur ini, ..." required></textarea>
             </div>
             <button type="submit" id="submit_button">Submit</button>
-            <button @click="backToList" id="back_button"> << Kembali</button>
+            <button @click="backToList" id="back_button"> << Kembali </button>
           </form>
         </div>
       </div>
@@ -141,17 +141,21 @@ function validasiForm() {
     formData.desc &&
     (!formData.no_bagian || formData.nama_bagian) &&
     (!formData.no_paragraf || formData.nama_paragraf)
- )
+  )
 }
 
 function backToList() {
   route.push("/ListDokumenAset")
 }
 
-function addNewForm() {
-  Object.assign(formData, dataDokumen());
-  isSubmitted.value = false;
+function toUpperCase(event) {
+  formData.no_bagian = event.target.value.toUpperCase();
 }
+
+// function addNewForm() {
+//   Object.assign(formData, dataDokumen());
+//   isSubmitted.value = false;
+// }
 
 watch(() => formData.no_bagian, (newVal) => {
   if (!newVal) {
@@ -217,6 +221,11 @@ h1.title {
   flex-direction: column;
   margin-bottom: 10px;
 }
+
+input#no_bagian {
+  text-transform: uppercase;
+}
+
 
 label {
   margin-bottom: 5px;
@@ -285,6 +294,7 @@ textarea {
   margin: 0 auto;
   width: 100px;
 }
+
 .loading_image {
   margin-top: 50px;
   width: 200px;

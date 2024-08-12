@@ -30,12 +30,13 @@
             </div>
             <div class="form-group">
               <label for="tujuan">Tujuan:</label>
-              <input id="tujuan" v-model="formData.tujuan" placeholder="Contoh: ...." required></input>
+              <textarea id="tujuan" v-model="formData.tujuan" placeholder="Contoh: ...." required></textarea>
             </div>
             <div class="form-group">
               <label for="ruang_lingkup">Ruang Lingkup:</label>
               <textarea id="ruang_lingkup" v-model="formData.ruang_lingkup"
-                placeholder="Contoh: Pasal 1 &#10;        Dalam Peraturan Gubernur ini, ..." required></textarea>
+                placeholder="Contoh: Pasal 1 &#10;        Dalam Peraturan Gubernur ini, ..." required>
+              </textarea>
             </div>
             <button type="submit" id="submit_button">Submit</button>
             <button @click="backToList" id="back_button"> << Kembali </button>

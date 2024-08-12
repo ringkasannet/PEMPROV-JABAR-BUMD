@@ -36,8 +36,9 @@
                   </div>
                 </div>
               </td>
-              <td v-if="showCheckboxes"><input type="checkbox" v-model="selectedItems" :value="item"
-                  class="row_checkbox"></td>
+              <td v-if="showCheckboxes">
+                <input type="checkbox" v-model="selectedItems" :value="item" class="row_checkbox">
+              </td>
             </tr>
           </tbody>
         </table>
@@ -179,7 +180,7 @@ function navigateToFormDokumen() {
 
 .header_title_container {
   padding-top: 20px;
-  margin-bottom: 20px;
+  /* margin-bottom: 20px; */
   text-align: center;
 }
 
@@ -257,8 +258,8 @@ tr:nth-child(even) {
 }
 
 .kolomDeskripsi {
-  width: 300px;
-  height: 150px;
+  max-width: 700px;
+  height: auto
 }
 
 button {

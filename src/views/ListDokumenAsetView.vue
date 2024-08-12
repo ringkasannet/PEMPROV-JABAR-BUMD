@@ -20,8 +20,7 @@
               <th>Nama</th>
               <th>Perda</th>
               <th>Deskripsi</th>
-              <th v-if="showCheckboxes"><input type="checkbox" @change="selectAll" class="select_all_checkbox"> Select
-                All</th>
+              <th v-if="showCheckboxes"><input type="checkbox" @change="selectAll" class="select_all_checkbox"> Select All</th>
             </tr>
           </thead>
           <tbody>
@@ -154,7 +153,7 @@ const toggleShowMore = (index) => {
 };
 
 const descPendek = (desc) => {
-  return desc.length > 75 ? desc.substring(0, 75) + '...' : desc;
+  return desc.length > 75 ? desc.substring(0, 150) + '...' : desc;
 };
 
 const cancelSelection = () => {
@@ -179,7 +178,6 @@ function navigateToFormDokumen() {
 
 .header_title_container {
   padding-top: 20px;
-  margin-bottom: 20px;
   text-align: center;
 }
 
@@ -257,8 +255,8 @@ tr:nth-child(even) {
 }
 
 .kolomDeskripsi {
-  width: 300px;
-  height: 150px;
+  max-width: 700px;
+  height: auto;
 }
 
 button {
