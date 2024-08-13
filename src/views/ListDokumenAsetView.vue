@@ -19,6 +19,7 @@
             <tr>
               <th>Nama</th>
               <th>Perda</th>
+              <th>Nomor Bab</th>
               <th>Deskripsi</th>
               <th v-if="showCheckboxes"><input type="checkbox" @change="selectAll" class="select_all_checkbox"> Select All</th>
             </tr>
@@ -27,6 +28,7 @@
             <tr v-for="(item, index) in paginatedList" :key="index">
               <td class="kolomNama">{{ item.name }}</td>
               <td class="kolomPerda">{{ item.perda }}</td>
+              <td class="kolomNoBab">{{ item.no_bab }}</td>
               <td>
                 <div class="kolomDeskripsi">
                   <VueMarkdown v-if="!item.showMore" :source="descPendek(item.desc)" />
@@ -250,7 +252,12 @@ tr:nth-child(even) {
 }
 
 .kolomPerda {
-  width: 200px;
+  width: 250px;
+  height: 150px;
+}
+
+.kolomNoBab {
+  width: 250px;
   height: 150px;
 }
 
