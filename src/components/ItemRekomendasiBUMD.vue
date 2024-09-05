@@ -1,7 +1,7 @@
 <template>
   <div class="outer-container">
     <div class="penjelasan">
-      <h1 class="card_title">{{ bumdName }} <br /></h1>
+      <h1 class="card_title text-3xl font-bold"> {{ bumdName }} <br /></h1>
       <!-- <h2>Skor kesesuaian: <span v-if="score">{{ score }}%</span></h2> -->
       <vue-markdown v-if="showReadMore" :source="penjelasanAi" />
       <vue-markdown  v-if="!showReadMore" :source="penjelasanAiShort" />

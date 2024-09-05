@@ -1,17 +1,30 @@
 <template>
   <div>
     <div id="main_container" class="fadeIn">
+      {{ paginatedList.length }}
       <div class="header_title_container">
         <h1 class="header_title_container">Dokumen BUMD</h1>
       </div>
       <div v-if="errorMessage" class="error_message">{{ errorMessage }}</div>
       <div v-if="paginatedList.length" class="table_container">
         <div class="optionButton">
-          <button class="plusButton" @click="navigateToFormDokumen">Tambahkan Dokumen</button>
-          <button class="deleteButton" v-if="!showCheckboxes" @click="showCheckboxes = true">Hapus Dokumen</button>
+          <button class="plusButton" @click="navigateToFormDokumen">
+            Tambahkan Dokumen
+          </button>
+          <button
+            class="deleteButton"
+            v-if="!showCheckboxes"
+            @click="showCheckboxes = true"
+          >
+            Hapus Dokumen
+          </button>
           <div v-if="showCheckboxes">
-            <button class="deleteButton" @click="confirmDelete">Delete Selected</button>
-            <button class="cancelButton" @click="cancelSelection">Batalkan</button>
+            <button class="deleteButton" @click="confirmDelete">
+              Delete Selected
+            </button>
+            <button class="cancelButton" @click="cancelSelection">
+              Batalkan
+            </button>
           </div>
         </div>
         <table>
@@ -20,7 +33,14 @@
               <th>Nama</th>
               <th>Perda</th>
               <th>Deskripsi</th>
-              <th v-if="showCheckboxes"><input type="checkbox" @change="selectAll" class="select_all_checkbox"> Select All</th>
+              <th v-if="showCheckboxes">
+                <input
+                  type="checkbox"
+                  @change="selectAll"
+                  class="select_all_checkbox"
+                />
+                Select All
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -29,28 +49,50 @@
               <td class="kolomPerda">{{ item.perda }}</td>
               <td>
                 <div class="kolomDeskripsi">
-                  <VueMarkdown v-if="!item.showMore" :source="descPendek(item.desc)" />
+                  <VueMarkdown
+                    v-if="!item.showMore"
+                    :source="descPendek(item.desc)"
+                  />
                   <VueMarkdown v-else :source="item.desc" />
                   <div class="showmore" @click="toggleShowMore(index)">
-                    {{ item.showMore ? 'Show Less' : 'Show More' }}
+                    {{ item.showMore ? "Show Less" : "Show More" }}
                   </div>
                 </div>
               </td>
               <td v-if="showCheckboxes">
-                <input type="checkbox" v-model="selectedItems" :value="item" class="row_checkbox">
+                <input
+                  type="checkbox"
+                  v-model="selectedItems"
+                  :value="item"
+                  class="row_checkbox"
+                />
               </td>
             </tr>
           </tbody>
         </table>
         <div class="pagination">
-          <button class="paginationButton" @click="prevPage" :disabled="currentPage === 1"> << </button>
+          <button
+            class="paginationButton"
+            @click="prevPage"
+            :disabled="currentPage === 1"
+          >
+            <<
+          </button>
           <span>Page {{ currentPage }} of {{ totalPages }}</span>
-          <button class="paginationButton" @click="nextPage" :disabled="currentPage === totalPages"> >> </button>
+          <button
+            class="paginationButton"
+            @click="nextPage"
+            :disabled="currentPage === totalPages"
+          >
+            >>
+          </button>
         </div>
       </div>
       <div v-else class="no-documents">
-        Belum ada dokumen apapun <br>
-        <button class="plusButton" @click="navigateToFormDokumen">Tambahkan Dokumen</button>
+        Belum ada dokumen apapun <br />
+        <button class="plusButton mr-2" @click="navigateToFormDokumen">
+          Tambahkan Dokumen
+        </button>
       </div>
     </div>
     <div v-if="showConfirmDialog" class="confirm_dialog">
@@ -64,13 +106,14 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue';
-import { useRouter } from 'vue-router';
-import VueMarkdown from 'vue-markdown-render'
+import { ref, onMounted, computed } from "vue";
+import { useRouter } from "vue-router";
+import VueMarkdown from "vue-markdown-render";
+import { baseUrl } from "@/BaseUrl";
 
 const currentList = ref([]);
 const selectedItems = ref([]);
-const errorMessage = ref('');
+const errorMessage = ref("");
 const currentPage = ref(1);
 const itemsPerPage = 4;
 const showCheckboxes = ref(false);
@@ -79,21 +122,25 @@ const router = useRouter();
 
 const fetchBumdList = async () => {
   try {
-    const response = await fetch('http://localhost:3000/getAllBumd');
-    if (!response.ok) throw new Error('Network response was not ok');
+    currentList.value = [];
+    const response = await fetch(`${baseUrl}/bumd/all`);
+    if (!response.ok) throw new Error("Network response was not ok");
     const data = await response.json();
-    currentList.value = data.map(item => {
+    currentList.value = data.map((item) => {
       return { ...item, showMore: false };
     });
     selectedItems.value = [];
   } catch (error) {
-    console.error('Failed to fetch BUMD list:', error);
-    errorMessage.value = 'Periksa Koneksi Internet Anda';
+    console.error("Failed to fetch BUMD list:", error);
+    errorMessage.value = "Periksa Koneksi Internet Anda";
   }
 };
 
-onMounted(() => {
-  fetchBumdList();
+onMounted(async () => {
+  await fetchBumdList();
+  console.log("input dokumen bumd");
+  console.log(import.meta.env.MODE);
+  console.log(import.meta.env);
 });
 
 const paginatedList = computed(() => {
@@ -116,24 +163,32 @@ const nextPage = () => {
 
 const deleteDokumen = async () => {
   try {
-    const selectedIds = selectedItems.value.map(item => item._id);
+    const selectedIds = selectedItems.value.map((item) => item._id);
     console.log(selectedIds);
-    const response = await fetch('http://localhost:3000/admin/removeSelectedBUMD', {
-      method: 'POST',
+    const response = await fetch(`${baseUrl}/dms/perda-bumd`, {
+      method: "DELETE",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify(selectedIds),
     });
-    if (!response.ok) throw new Error('Failed to delete selected items');
-    currentList.value = currentList.value.filter(item => !selectedItems.value.includes(item));
+    if (!response.ok) {
+      alert("Failed to delete selected items");
+      return;
+    }
+    currentList.value = await Promise.all(
+      currentList.value.filter((item) => !selectedIds.includes(item._id)),
+    );
+    console.log(currentList.value);
+    if (currentPage.value>totalPages.value) currentPage.value=1;
     selectedItems.value = [];
     showCheckboxes.value = false;
-    errorMessage.value = '';
+    errorMessage.value = "";
     showConfirmDialog.value = false;
   } catch (error) {
     showConfirmDialog.value = false;
-    errorMessage.value = 'Terjadi kesalahan saat menghapus data';
+    errorMessage.value = "Terjadi kesalahan saat menghapus data";
+    alert("Failed to delete selected items");
   }
 };
 
@@ -151,11 +206,12 @@ const selectAll = (event) => {
 
 const toggleShowMore = (index) => {
   const actualIndex = (currentPage.value - 1) * itemsPerPage + index;
-  currentList.value[actualIndex].showMore = !currentList.value[actualIndex].showMore;
+  currentList.value[actualIndex].showMore =
+    !currentList.value[actualIndex].showMore;
 };
 
 const descPendek = (desc) => {
-  return desc.length > 75 ? desc.substring(0, 75) + '...' : desc;
+  return desc.length > 75 ? desc.substring(0, 75) + "..." : desc;
 };
 
 const cancelSelection = () => {
@@ -209,18 +265,19 @@ h1.header_title_container {
 .plusButton {
   height: 50px;
   max-width: 200px;
+  margin-right: 2px;
 }
 
 .deleteButton {
   background-color: red;
   height: 50px;
+  margin-right: 2px;
 }
 
 .cancelButton {
   background-color: gray;
   height: 50px;
 }
-
 
 .table_container {
   margin: 5px auto;
@@ -233,7 +290,8 @@ table {
   border-collapse: collapse;
 }
 
-th, td {
+th,
+td {
   padding: 15px;
   text-align: left;
 }
@@ -259,7 +317,7 @@ tr:nth-child(even) {
 
 .kolomDeskripsi {
   max-width: 700px;
-  height: auto
+  height: auto;
 }
 
 button {

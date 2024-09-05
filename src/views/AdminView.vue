@@ -27,11 +27,11 @@ import { useRouter } from "vue-router";
 const router = useRouter();
 
 function navigateToListBumdDokumenView() {
-  router.push("/ListDokumenBUMD");
+  router.push("/list-bumd");
 }
 
 function navigateToListAsetDokumenView() {
-  router.push("/ListDokumenAset");
+  router.push("/list-aset");
 }
 </script>
 

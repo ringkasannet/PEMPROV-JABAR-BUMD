@@ -118,7 +118,7 @@ a {
 
 @media (max-width: 850px) {
   .menu_container {
-    display: none;
+    /* display: none; */
   }
   h3 {
     font-size: 0.9em;

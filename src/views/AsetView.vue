@@ -2,38 +2,59 @@
   <div id="main_container">
     <div id="tittle_container" class="fadeIn">
       <div id="tittle">
-        <h1 class="tittle">Pemanfaatan<span style="color: green;">Aset</span></h1>
+        <h1 class="tittle">
+          Pemanfaatan<span style="color: green">Aset</span>
+        </h1>
         <h2 class="tittle">Peraturan dan Kebijakan Pemanfaatan Aset</h2>
       </div>
       <div id="tittle_logo">
-        <img class="logo_img" src="../assets/sun.png" alt="Logo">
+        <img class="logo_img" src="../assets/sun.png" alt="Logo" />
       </div>
     </div>
     <div id="ai_container" class="fadeIn">
       <div id="option_container">
         <div id="ai_model">
-          Model: <v-select v-model="modelAI" :options="['GeminiAi', 'OpenAi']"></v-select>
+          Model:
+          <v-select
+            v-model="modelAI"
+            :options="['GeminiAi', 'OpenAi']"
+          ></v-select>
         </div>
         <div id="jumlah_rekomendasi">
-          Jumlah bab yang di analisis: <v-select v-model="numDoc" :options="[3, 5, 7, 10, 20]"></v-select>
+          Jumlah bab yang di analisis:
+          <v-select v-model="numDoc" :options="[3, 5, 7, 10, 20]"></v-select>
         </div>
       </div>
       <div id="chat_app">
         <form @submit.prevent="getAnswer" id="form_container">
           <button id="send_button">
-            Evaluasi Peraturan & <br> Pemanfaatan
+            Evaluasi Peraturan & <br />
+            Pemanfaatan
           </button>
-          <input id="input_message" type="text" v-model="query" placeholder="Peraturan dan pemanfaatan...">
+          <input
+            id="input_message"
+            type="text"
+            v-model="query"
+            placeholder="Peraturan dan pemanfaatan..."
+          />
         </form>
       </div>
     </div>
     <div v-if="loading">
-      <img id="loading_container" src="../assets/work-in-progress.gif" alt="Loading...">
+      <img
+        id="loading_container"
+        src="../assets/work-in-progress.gif"
+        alt="Loading..."
+      />
     </div>
     <div id="candidate_container">
       <TransitionGroup name="list" tag="ul" class="no-bullets">
-        <div v-if="data.length !== 0">
-          <li v-for="(item, index) in sortedData" :key="index" class="candidate-item">
+        <div v-if="perdaDocs.length !== 0">
+          <li
+            v-for="(item, index) in sortedData"
+            :key="index"
+            class="candidate-item"
+          >
             <ItemEvaluasiAset
               :asetName="item.asetName"
               :penjelasanAi="item.penjelasan"
@@ -47,12 +68,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed } from "vue";
 import vSelect from "vue-select";
 import "vue-select/dist/vue-select.css";
 import ItemEvaluasiAset from "../components/ItemEvaluasiAset.vue";
+import { baseUrl } from "../BaseUrl";
 
-interface AsetData {
+interface PerdaDoc {
   id: string;
   asetName: string;
   penjelasan: string;
@@ -60,64 +82,20 @@ interface AsetData {
   score: number;
 }
 
-const baseUrl= 'https://ringkasan.net';
+
 const numDoc = ref(20);
-const query = ref('');
-const data = ref<AsetData[]>([]);
-const modelAI = ref('GeminiAI');
+const query = ref("");
+const perdaDocs = ref<PerdaDoc[]>([]);
+const modelAI = ref("GeminiAI");
 const loading = ref(false);
-
-async function submitQuery() {
-  console.log(`query: ${query.value}`);
-  
-  // const url = `http://localhost:3000/asetQA/${query.value}/${modelAI.value}/${numDoc.value}`;
-  const url = `${baseUrl}/asetQA/${query.value}/${modelAI.value}/${numDoc.value}`;
-
-  try {
-    const response = await fetch(url);
-    if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
-      window.alert(response.body)
-
-    } 
-    if (!response.body) {
-      throw new Error('Response body is null');
-    }
-    const reader = response.body.getReader();
-    const readChunk = async () => {
-      const { value, done } = await reader.read();
-      if (done) {
-        console.log('streaming done');
-        return;
-      }
-
-      const chunkString = new TextDecoder().decode(value);
-      const modifiedChunk = chunkString.replace(/}{/g, "},{");
-      const validChunk = '[' + modifiedChunk + ']';
-      const jsonChunk = JSON.parse(validChunk);
-
-      jsonChunk.forEach((item: AsetData) => {
-        const existingDoc = data.value.find(doc => doc.id === item.id);
-        if (existingDoc) {
-          existingDoc.penjelasan += item.penjelasan;
-          existingDoc.penjelasanShort = createShortDescription(existingDoc.penjelasan);
-          existingDoc.score = getScore(existingDoc.penjelasan);
-        }
-      });
-      readChunk();
-    };
-    readChunk();
-  } catch (error) {
-    console.log("Error pas submitQuery:", error);
-    window.alert(error)
-  }
-}
+const fetchController = new AbortController();
+const fetchSignal=fetchController.signal
 
 async function getAnswer() {
-  data.value = [];
+  perdaDocs.value = [];
   loading.value = true;
-  if (query.value === '') {
-    console.log('Query tidak boleh kosong');
+  if (query.value === "") {
+    console.log("Query tidak boleh kosong");
     loading.value = false;
     return;
   }
@@ -127,19 +105,27 @@ async function getAnswer() {
 }
 
 async function getDocCandidate() {
-  const url = `${baseUrl}/getAsetCandidate/${query.value}/${numDoc.value}`;
+  const url = `${baseUrl}/aset/aset-candidates/${numDoc.value}`;
+  if (perdaDocs.value.length>0) fetchController.abort(); 
   try {
-    const res = await fetch(url);
+    const res = await fetch(url, {
+      signal:fetchSignal,
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ query: query.value }),
+    });
     if (!res.ok) {
       throw new Error(`HTTP error! Status: ${res.status}`);
     }
     const arrayDoc = await res.json();
     arrayDoc.candidates.forEach((candidate: any) => {
-      data.value.push({
+      perdaDocs.value.push({
         id: candidate.id,
-        asetName: `Aspek ${candidate.name}`,
-        penjelasan: '',
-        penjelasanShort: '',
+        asetName: `${candidate.name}`,
+        penjelasan: "",
+        penjelasanShort: "",
         score: 0,
       });
     });
@@ -149,8 +135,64 @@ async function getDocCandidate() {
   }
 }
 
+async function submitQuery() {
+  console.log(`query: ${query.value}`);
+
+  const url = `${baseUrl}/aset/q-a/${modelAI.value}/${numDoc.value}`;
+
+  try {
+    const response = await fetch(url, {
+      signal:fetchSignal,
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ query: query.value }),
+    });
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+      window.alert(response.body);
+    }
+    if (!response.body) {
+      throw new Error("Response body is null");
+    }
+    const reader = response.body.getReader();
+    const readChunk = async () => {
+      const { value, done } = await reader.read();
+      if (done) {
+        console.log("streaming done");
+        return;
+      }
+
+      const chunkString = new TextDecoder().decode(value);
+      const modifiedChunk = chunkString.replace(/}{/g, "},{");
+      const validChunk = "[" + modifiedChunk + "]";
+      const jsonChunk = JSON.parse(validChunk);
+
+      jsonChunk.forEach((item: PerdaDoc) => {
+        const existingDoc = perdaDocs.value.find((doc) => doc.id === item.id);
+        if (existingDoc) {
+          existingDoc.penjelasan += item.penjelasan;
+          existingDoc.penjelasan = removeTripleBackticks(existingDoc.penjelasan)
+          existingDoc.penjelasanShort = createShortDescription(
+            existingDoc.penjelasan,
+          );
+          existingDoc.score = getScore(existingDoc.penjelasan);
+        }
+      });
+      readChunk();
+    };
+    readChunk();
+  } catch (error) {
+    console.log("Error pas submitQuery:", error);
+    window.alert(error);
+  }
+}
+
 function createShortDescription(description: string): string {
-  return description.length > 500 ? description.substring(0, 500) + '...' : description;
+  return description.length > 500
+    ? description.substring(0, 500) + "..."
+    : description;
 }
 
 function getScore(description: string): number {
@@ -159,9 +201,13 @@ function getScore(description: string): number {
   return match ? parseInt(match[1]) : 0;
 }
 
+function removeTripleBackticks(inputString: string): string {
+  const regex = /```/g; // Matches triple backticks globally
+  return inputString.replace(regex, '');
+}
 const sortedData = computed(() => {
   // console.log('sebelum diurutkan:', data.value);
-  const sorted = [...data.value].sort((a, b) => b.score - a.score);
+  const sorted = [...perdaDocs.value].sort((a, b) => b.score - a.score);
   // console.log('sesudah diurutkan:', sorted);
   return sorted;
 });
@@ -208,8 +254,8 @@ h2.tittle {
 }
 
 #ai_container {
-  margin-top: 30px;
-  width: 1000px;
+  margin: 30px;
+  width: 100vw;
   display: flex;
   flex-direction: column;
 }
@@ -218,21 +264,28 @@ h2.tittle {
   display: flex;
   flex-direction: row;
   justify-content: end;
+  margin-right:14px;
 }
 
 #chat_app {
   margin-top: 5px;
+  width:100%;
   display: flex;
   flex-direction: row;
   justify-content: center;
-  width: 1000px;
+  width: 100%;
   height: 75px;
 }
 
 #form_container {
   display: flex;
+  width:100%;
+  margin:10px;
 }
 
+#ai_model{
+  margin-right:5px;
+}
 #send_button {
   background-color: #4f8383;
   color: #fff;
@@ -249,13 +302,13 @@ h2.tittle {
 }
 
 #input_message {
-  width: 822.5px;
   height: 55px;
   border: 1px solid #ccc;
   border-radius: 5px;
   box-sizing: border-box;
   margin: 2.5px;
   padding-left: 10px;
+  flex-grow:4;
 }
 
 #loading_container {

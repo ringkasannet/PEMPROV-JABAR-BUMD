@@ -2,56 +2,98 @@
   <div>
     <div id="main_container" class="fadeIn">
       <div class="header_title_container">
-        <h1 class="header_title_container"> Dokumen Aset </h1>
+        <h1 class="header_title_container">Dokumen Aset</h1>
       </div>
       <div v-if="errorMessage" class="error_message">{{ errorMessage }}</div>
       <div v-if="paginatedList.length" class="table_container">
         <div class="optionButton">
-          <button class="plusButton" @click="navigateToFormDokumen">Tambahkan Dokumen</button>
-          <button class="deleteButton" v-if="!showCheckboxes" @click="showCheckboxes = true">Hapus Dokumen</button>
+          <button class="plusButton" @click="navigateToFormDokumen">
+            Tambahkan Dokumen
+          </button>
+          <button
+            class="deleteButton"
+            v-if="!showCheckboxes"
+            @click="showCheckboxes = true"
+          >
+            Hapus Dokumen
+          </button>
           <div v-if="showCheckboxes">
-            <button class="deleteButton" @click="confirmDelete">Delete Selected</button>
-            <button class="cancelButton" @click="cancelSelection">Batalkan</button>
+            <button class="deleteButton" @click="confirmDelete">
+              Delete Selected
+            </button>
+            <button class="cancelButton" @click="cancelSelection">
+              Batalkan
+            </button>
           </div>
         </div>
-        <table>
+        <table class="table-fixed border-collapse border border-slate-400">
           <thead>
             <tr>
-              <th>Nama</th>
-              <th>Perda</th>
-              <th>Nomor Bab</th>
-              <th>Deskripsi</th>
-              <th v-if="showCheckboxes"><input type="checkbox" @change="selectAll" class="select_all_checkbox"> Select All</th>
+              <th class="w-5/6">Perda</th>
+              <th class="w-1/6" v-if="showCheckboxes">
+                <input
+                  type="checkbox"
+                  @change="selectAll"
+                  class="select_all_checkbox"
+                />
+                Select All
+              </th>
             </tr>
           </thead>
           <tbody>
-            <tr v-for="(item, index) in paginatedList" :key="index">
-              <td class="kolomNama">{{ item.name }}</td>
-              <td class="kolomPerda">{{ item.perda }}</td>
-              <td class="kolomNoBab">{{ item.no_bab }}</td>
-              <td>
-                <div class="kolomDeskripsi">
-                  <VueMarkdown v-if="!item.showMore" :source="descPendek(item.desc)" />
-                  <VueMarkdown v-else :source="item.desc" />
-                  <div class="showmore" @click="toggleShowMore(index)">
-                    {{ item.showMore ? 'Show Less' : 'Show More' }}
+            <tr class="border" v-for="(item, index) in paginatedList" :key="index">
+              <td class="kolomNama">
+                <div>
+                  <h2>{{ item.perda }}</h2>
+                  <h3>{{ item.name }}</h3>
+                  <div class="kolomDeskripsi">
+                    <h3 class="font-bold">Isi Perda:</h3>
+                    <VueMarkdown
+                      v-if="!item.showMore"
+                      :source="descPendek(item.desc)"
+                    />
+                    <VueMarkdown v-else :source="item.desc" />
+                    <div class="showmore" @click="toggleShowMore(index)">
+                      {{ item.showMore ? "Show Less" : "Show More" }}
+                    </div>
                   </div>
                 </div>
               </td>
-              <td v-if="showCheckboxes"><input type="checkbox" v-model="selectedItems" :value="item"
-                  class="row_checkbox"></td>
+              <td v-if="showCheckboxes">
+                <input
+                  type="checkbox"
+                  v-model="selectedItems"
+                  :value="item"
+                  class="row_checkbox"
+                />
+              </td>
+
             </tr>
           </tbody>
         </table>
         <div class="pagination">
-          <button class="paginationButton" @click="prevPage" :disabled="currentPage === 1"> << </button>
+          <button
+            class="paginationButton"
+            @click="prevPage"
+            :disabled="currentPage === 1"
+          >
+            <<
+          </button>
           <span>Page {{ currentPage }} of {{ totalPages }}</span>
-          <button class="paginationButton" @click="nextPage" :disabled="currentPage === totalPages"> >> </button>
+          <button
+            class="paginationButton"
+            @click="nextPage"
+            :disabled="currentPage === totalPages"
+          >
+            >>
+          </button>
         </div>
       </div>
       <div v-else class="no-documents">
-          Belum ada dokumen apapun <br>
-          <button class="plusButton" @click="navigateToFormDokumen">Tambahkan Dokumen</button>
+        Belum ada dokumen apapun <br />
+        <button class="plusButton" @click="navigateToFormDokumen">
+          Tambahkan Dokumen
+        </button>
       </div>
     </div>
     <div v-if="showConfirmDialog" class="confirm_dialog">
@@ -65,31 +107,36 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue';
-import { useRouter } from 'vue-router';
-import VueMarkdown from 'vue-markdown-render'
+import { ref, onMounted, computed } from "vue";
+import { useRouter } from "vue-router";
+import VueMarkdown from "vue-markdown-render";
 
 const currentList = ref([]);
 const selectedItems = ref([]);
-const errorMessage = ref('');
+const errorMessage = ref("");
 const currentPage = ref(1);
 const itemsPerPage = 4;
 const showCheckboxes = ref(false);
 const showConfirmDialog = ref(false);
 const router = useRouter();
 
+import { baseUrl } from "../BaseUrl";
+
 const fetchAsetList = async () => {
   try {
-    const response = await fetch('http://localhost:3000/getAllAset');
-    if (!response.ok) throw new Error('Network response was not ok');
+    const response = await fetch(`${baseUrl}/aset/all-perda`);
+    if (!response.ok) {
+      alert("Error fetching Perda Aset");
+      return;
+    }
     const data = await response.json();
-    currentList.value = data.map(item => {
+    currentList.value = data.map((item) => {
       return { ...item, showMore: false };
     });
     selectedItems.value = [];
   } catch (error) {
-    console.error('Failed to fetch Aset list:', error);
-    errorMessage.value = 'Periksa Koneksi Internet Anda';
+    console.error("Failed to fetch Aset list:", error);
+    errorMessage.value = "Periksa Koneksi Internet Anda";
   }
 };
 
@@ -117,23 +164,25 @@ const nextPage = () => {
 
 const deleteDokumen = async () => {
   try {
-    const selectedIds = selectedItems.value.map(item => item._id);
-    const response = await fetch('http://localhost:3000/admin/removeSelectedAsetChunks', {
-      method: 'POST',
+    const selectedPerdas = selectedItems.value.map((item) => item.perda);
+    const response = await fetch(`${baseUrl}/dms/perda-aset`, {
+      method: "DELETE",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
-      body: JSON.stringify(selectedIds),
+      body: JSON.stringify(selectedPerdas),
     });
-    if (!response.ok) throw new Error('Failed to delete selected items');
-    currentList.value = currentList.value.filter(item => !selectedItems.value.includes(item));
+    if (!response.ok) throw new Error("Failed to delete selected items");
+    currentList.value = currentList.value.filter(
+      (item) => !selectedItems.value.includes(item),
+    );
     selectedItems.value = [];
     showCheckboxes.value = false;
-    errorMessage.value = '';
+    errorMessage.value = "";
     showConfirmDialog.value = false;
   } catch (error) {
     showConfirmDialog.value = false;
-    errorMessage.value = 'Terjadi kesalahan saat menghapus data';
+    errorMessage.value = "Terjadi kesalahan saat menghapus data";
   }
 };
 
@@ -151,11 +200,12 @@ const selectAll = (event) => {
 
 const toggleShowMore = (index) => {
   const actualIndex = (currentPage.value - 1) * itemsPerPage + index;
-  currentList.value[actualIndex].showMore = !currentList.value[actualIndex].showMore;
+  currentList.value[actualIndex].showMore =
+    !currentList.value[actualIndex].showMore;
 };
 
 const descPendek = (desc) => {
-  return desc.length > 75 ? desc.substring(0, 150) + '...' : desc;
+  return desc.length > 75 ? desc.substring(0, 150) + "..." : desc;
 };
 
 const cancelSelection = () => {
@@ -228,7 +278,7 @@ h1.header_title_container {
 
 table {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
 }
 
 th,

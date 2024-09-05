@@ -1,7 +1,7 @@
 <template>
     <div class="outer-container">
         <div class="penjelasan">
-            <h1 class="card_title">{{ asetName }} <br /></h1>
+            <h1 class="text-2xl font-bold card_title">{{ asetName }} <br /></h1>
             <vue-markdown v-if="showReadMore" :source="penjelasanAi" />
             <vue-markdown v-if="!showReadMore" :source="penjelasanAiShort" />
             <a v-if="!showReadMore && penjelasanAi" href="#" @click.prevent="toggleReadMore">Read More...</a>

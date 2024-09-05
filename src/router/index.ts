@@ -42,12 +42,12 @@ const router = createRouter({
       component: InputDokumenBumdView,
     },
     {
-      path: '/listDokumenBUMD',
+      path: '/list-bumd',
       name: 'listDokumenBUMD',
       component: ListDokumenBUMDView,
     },
     {
-      path: '/listDokumenAset',
+      path: '/list-aset',
       name: 'listDokumenAset',
       component: ListDokumenAsetView,
     },

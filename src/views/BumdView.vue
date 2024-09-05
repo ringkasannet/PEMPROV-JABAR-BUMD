@@ -2,25 +2,41 @@
   <div class="main_container">
     <div class="flex_row padding20 flex_end max_width centered_div top_banner">
       <div>
-        <h1 class="main_tittle">Matching <span class="green_color">BUMD </span></h1>
-        <h2 class="main_tittle text_right">Pemetaan kesesuaian penugasan BUMD</h2>
+        <h1 class="main_tittle">
+          Matching <span class="green_color">BUMD </span>
+        </h1>
+        <h2 class="main_tittle text_right">
+          Pemetaan kesesuaian penugasan BUMD
+        </h2>
       </div>
-      <Transition name="rotate" appear >
+      <Transition name="rotate" appear>
         <img class="card_image" src="../assets/infographic.png" alt="" />
       </Transition>
     </div>
-    <div v-if="error" class="error-message">{{ error }}</div>
     <Transition name="fade" appear>
       <div class="chat_container">
         <div class="chat-app">
           <div class="admin_container" style="">
-            <div class="admin_item" style="display: flex; justify-content: flex-end">
+            <div
+              class="admin_item"
+              style="display: flex; justify-content: flex-end"
+            >
               <div style="padding-top: 5px">Model:</div>
-              <v-select v-model="aiModel" style="width: 200px; margin-left:5px" :options="['OpenAi', 'GeminiAi']"></v-select>
+              <v-select
+                v-model="aiModel"
+                style="width: 200px; margin-left: 5px"
+                :options="['OpenAi', 'GeminiAi']"
+              ></v-select>
             </div>
             <div style="display: flex; justify-content: flex-end">
-              <div style="padding-top: 5px;margin-left:5px;">Jumlah Rekomendasi:</div>
-              <v-select v-model="jumlahRekomendasi" style="width: 100px;margin-left:5px;" :options="[1, 2, 3, 4, 5]"></v-select>
+              <div style="padding-top: 5px; margin-left: 5px">
+                Jumlah Rekomendasi:
+              </div>
+              <v-select
+                v-model="jumlahRekomendasi"
+                style="width: 100px; margin-left: 5px"
+                :options="[1, 2, 3, 4, 5]"
+              ></v-select>
             </div>
           </div>
 
@@ -29,20 +45,42 @@
               Evaluasi Kesesuaian <br />
               Penugasan
             </button>
-            <input type="text" v-model="message" placeholder="Kebutuhan penugasan..." />
+            <input
+              type="text"
+              v-model="message"
+              placeholder="Kebutuhan penugasan..."
+            />
           </form>
         </div>
         <div v-if="loading" class="loading-container">
           <img class="loading_image" src="../assets/work-in-progress.gif" />
         </div>
 
-        <div class="candidate_container" style="display: flex; flex-direction: column; margin-top: 20px">
-          <TransitionGroup name="list" tag="ul" style="display:block;padding:0 20px">
-            <li v-for="(candidate, index) in bumdCandidate" :key="index" style="list-style-type:none;">
+        <div
+          class="candidate_container"
+          style="display: flex; flex-direction: column; margin-top: 20px"
+        >
+          <TransitionGroup
+            name="list"
+            tag="ul"
+            style="display: block; padding: 0 20px"
+          >
+            <li
+              v-for="(candidate, index) in bumdCandidate"
+              :key="index"
+              style="list-style-type: none"
+            >
               <!-- {{ candidate.bumd.name }}
             {{ candidate.bumd.id }} -->
               <Transition name="fade" appear>
-                <itemRekomendasiBUMD :bumdId="candidate.bumd.id" :bumdName="candidate.bumd.name" :penjelasanAi="candidate.penjelasanAi" :penjelasanAiShort="candidate.penjelasanAiShort" :score=candidate.score :query="message" />
+                <itemRekomendasiBUMD
+                  :bumdId="candidate.bumd.id"
+                  :bumdName="candidate.bumd.name"
+                  :penjelasanAi="candidate.penjelasanAi"
+                  :penjelasanAiShort="candidate.penjelasanAiShort"
+                  :score="candidate.score"
+                  :query="message"
+                />
               </Transition>
             </li>
           </TransitionGroup>
@@ -53,23 +91,26 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, ref, watch } from "vue";
+import { reactive, ref, watch, onMounted } from "vue";
 import VueMarkdown from "vue-markdown-render";
 import vSelect from "vue-select";
 import "vue-select/dist/vue-select.css";
 import itemRekomendasiBUMD from "../components/ItemRekomendasiBUMD.vue";
+import { baseUrl } from "../BaseUrl";
 
+onMounted(() => {
+  console.log(baseUrl);
+});
 function urutkanBumd() {
-  console.log('urutkanBumd, sebelum diurutkan:')
-  bumdCandidate.forEach(bumd=>{
-    console.log("1",bumd.bumd.name,bumd.score)
-  })
-  console.log('urutkanBumd, setelah diurutkan:')
+  console.log("urutkanBumd, sebelum diurutkan:");
+  bumdCandidate.forEach((bumd) => {
+    console.log("1", bumd.bumd.name, bumd.score);
+  });
+  console.log("urutkanBumd, setelah diurutkan:");
   bumdCandidate.sort((a, b) => b.score - a.score);
-  bumdCandidate.forEach(bumd=>{
-    console.log("1",bumd.bumd.name,bumd.score)
-  })
-
+  bumdCandidate.forEach((bumd) => {
+    console.log("1", bumd.bumd.name, bumd.score);
+  });
 }
 
 interface bumdInterface {
@@ -82,7 +123,7 @@ interface bumdInterface {
 
 class Bumd {
   public bumd: bumdInterface;
-  
+
   public query: string;
   public penjelasanAi: string = "";
   public penjelasanAiShort: string = "";
@@ -91,7 +132,7 @@ class Bumd {
   private controller = new AbortController();
   private signal = this.controller.signal;
   private showReadMore = false;
-  private scoreSent=false;
+  private scoreSent = false;
 
   constructor(bumd: bumdInterface, query: string) {
     this.bumd = bumd;
@@ -108,16 +149,23 @@ class Bumd {
     this.controller.abort();
   }
 
-  getScore():number {
-    if (this.scoreSent) return NaN
+  getScore(): number {
+    if (this.scoreSent) return NaN;
     const regexScore = /(\d+)%/;
     const cobaExtractScore = this.penjelasanAiShort.match(regexScore);
     let scoreExtracted;
     if (cobaExtractScore) {
-      console.log("Get scoreExtracted:", cobaExtractScore[1], "id:", this.bumd.name, "to number:",Number(cobaExtractScore[1]));
+      console.log(
+        "Get scoreExtracted:",
+        cobaExtractScore[1],
+        "id:",
+        this.bumd.name,
+        "to number:",
+        Number(cobaExtractScore[1]),
+      );
       console.log(this.penjelasanAiShort);
-      this.score=Number(cobaExtractScore[1])
-      this.scoreSent=true;
+      this.score = Number(cobaExtractScore[1]);
+      this.scoreSent = true;
       return Number(cobaExtractScore[1]);
     } else {
       return NaN;
@@ -126,8 +174,8 @@ class Bumd {
   addPenjelasanAi(text: string) {
     // console.log('setting penjelasan AI:',text)
     this.penjelasanAi += text;
-    let score=this.getScore();
-    if (score){
+    let score = this.getScore();
+    if (score) {
       console.log("Get scoreExtracted:", score);
 
       this.score = score;
@@ -142,53 +190,54 @@ class Bumd {
   async evaluasiBUMD() {
     console.log("about to evaluate bumd:", this.bumd.id, this.query);
     try {
-      
-      // const url = `https://high-ace-421114.et.r.appspot.com/evaluasiBUMD/${bumd.id}/${query}`;
-      // const url = `http://localhost:3000/evaluasiBUMD/${this.bumd.id}/${this.query}/${aiModel.value}`;
-      const url = `https://ringkasan.net/evaluasiBUMD/${this.bumd.id}/${this.query}/${aiModel.value}`;
+      const url = `${baseUrl}/bumd/evaluasi/${this.bumd.id}/${aiModel.value}`;
 
       console.log("fetching data from:", url);
       let buffer = "";
-      const evaluationQuery = fetch(url, { signal: this.signal })
-        .then((response) => {
-          console.log("response:", response);
-          loading.value = false;
-          if (!response.body) {
-            console.error("No response body");
-            this.penjelasanAi = "No response body";
-            this.penjelasanAiShort = "No response body";
-          } else {
-            const reader = response.body.getReader();
-            const decoder = new TextDecoder(); // Assuming text data
+      const response = await fetch(url, {
+        signal: this.signal,
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ query: message.value }),
 
-            const readChunk = async () => {
-              const { value, done } = await reader.read();
-              if (done) {
-                return;
-              }
-              const chunkString = decoder.decode(value);
-              // console.log("penjelasan AI: ",this.penjelasanAi)
-              // console.log(chunkString); // Process the chunk
-              buffer += chunkString;
-              this.addPenjelasanAi(chunkString);
-              if (this.penjelasanAiShort.length < 700) {
-                this.addPenjelasanAiShort(chunkString);
-              } else {
-                this.showReadMore = true;
-              }
+      });
+      console.log("response:", response);
+      loading.value = false;
+      if (!response.body) {
+        console.error("No response body");
+        this.penjelasanAi = "No response body";
+        this.penjelasanAiShort = "No response body";
+      } else {
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder(); // Assuming text data
 
-              readChunk(); // Read the next chunk
-            };
-            readChunk();
+        const readChunk = async () => {
+          const { value, done } = await reader.read();
+          if (done) {
+            return;
           }
-        })
-        .catch((error) => {
-          console.error("Error fetching data:", error);
-        });
+          const chunkString = decoder.decode(value);
+          // console.log("penjelasan AI: ",this.penjelasanAi)
+          // console.log(chunkString); // Process the chunk
+          buffer += chunkString;
+          this.addPenjelasanAi(chunkString);
+          if (this.penjelasanAiShort.length < 700) {
+            this.addPenjelasanAiShort(chunkString);
+          } else {
+            this.showReadMore = true;
+          }
+
+          readChunk(); // Read the next chunk
+        };
+        readChunk();
+      }
+
     } catch (err) {
       console.log("error:", err);
       loading.value = false;
-      throw new Error(JSON.stringify(err));
+      throw err;
     }
   }
 }
@@ -210,6 +259,7 @@ async function processQuerry() {
   }
   console.log("query: ", message.value, "aiModel:", aiModel.value);
   try {
+    //this code is important if we want to send new query and abort fetching the previous one
     if (bumdCandidate.length > 0) {
       bumdCandidate.map((item) => {
         item.abortFetch();
@@ -225,8 +275,8 @@ async function processQuerry() {
     });
   } catch (err) {
     console.log("error:", err);
-    error.value = JSON.stringify(err);
     loading.value = false;
+    alert("Error getting BUMD Candidate");
   }
   loading.value = false;
 }
@@ -237,14 +287,18 @@ async function getBUMDCandidate(): Promise<bumdInterface[]> {
   if (!jumlahRekomendasi.value) {
     jumlahRekomendasi.value = 3;
   }
-  // const url = "http://localhost:3000/getBUMDCandidate/" + message.value + "/" + Number(jumlahRekomendasi.value);
 
-  const url = "https://ringkasan.net/getBUMDCandidate/" + message.value + "/" + Number(jumlahRekomendasi.value);
-  // const url = "https://high-ace-421114.et.r.appspot.com/getBUMDCandidate/" + message.value + "/" + Number(jumlahRekomendasi.value);
+  const url = `${baseUrl}/bumd/candidates/${jumlahRekomendasi.value}`;
 
   try {
     console.log("fetching url:", url);
-    const query = await fetch(url);
+    const query = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ query: message.value }),
+    });
     console.log("query:", query);
     if (query.status != 200) {
       error.value = `Error:  ${query.status}`;
@@ -254,13 +308,13 @@ async function getBUMDCandidate(): Promise<bumdInterface[]> {
 
     const candidate = await query.json();
 
-    if (!candidate?.bumdCandidate) {
-      console.log("Error no answer is given");
+    if (candidate.length < 1) {
+      console.log("Error no candidate is given");
       throw new Error("Error no answer is given");
     }
 
     loading.value = false;
-    return candidate.bumdCandidate.map((item: any) => {
+    return candidate.map((item: any) => {
       return {
         id: item.id,
         name: item.name,
@@ -271,22 +325,20 @@ async function getBUMDCandidate(): Promise<bumdInterface[]> {
     });
   } catch (err) {
     console.log("error:", err);
-    error.value = JSON.stringify(err);
     console.log(error.value);
     loading.value = false;
-
-    throw new Error(JSON.stringify(err));
+    throw err;
   }
 }
 </script>
 
 <style scoped>
-.main_container{
+.main_container {
   background-image: url("../assets/19449741.jpg");
   background-repeat: repeat-x;
   background-size: cover;
   background-position: top;
-  min-height:100vh;
+  min-height: 100vh;
 }
 .chat-app {
   width: 100%;
@@ -497,10 +549,10 @@ p.blinking {
   margin-right: 20px;
 }
 
- /* apply transition to moving elements */
+/* apply transition to moving elements */
 .list-enter-active,
 .list-leave-active,
-.list-move{
+.list-move {
   transition: all 0.5s ease;
 }
 
