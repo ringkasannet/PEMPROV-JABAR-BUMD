@@ -52,7 +52,7 @@ const pdfRenderer = ref<PdfRenderer | null>(null);
 
 onMounted(() => {
   console.log("onMounted, pdfFile::", props.pdfFile);
-  pdfRenderer.value = new PdfRenderer(pdfCanvas.value);
+  pdfRenderer.value = new PdfRenderer(pdfCanvas.value as HTMLCanvasElement);
   if (props.pdfFile) {
     pdfRenderer.value.loadFile(props.pdfFile);
   }
@@ -66,7 +66,7 @@ watch(
   () => props.pdfFile,
   (newVal) => {
     console.log("watching pdfFile:", newVal);
-    pdfRenderer.value.loadFile(newVal);
+    pdfRenderer.value?.loadFile(newVal as File);
   },
 );
 </script>

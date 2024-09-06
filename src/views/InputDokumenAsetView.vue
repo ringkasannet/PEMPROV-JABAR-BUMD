@@ -39,23 +39,11 @@
             </button>
           </div>
         </div>
-        {{ loading }}
-
         <div class="lg:flex">
           <div v-if="loading" class="text-center mt-4 lg:w-1/2">
             <span class="animate-pulse text-green-400">
-              Extracting PDF Documents...
+              Extracting PDF Document...
             </span>
-            <div id="loading_container" class="flex flex-col items-center">
-              <div>
-                <img
-                  class="w-48"
-                  src="../assets/work-in-progress.gif"
-                  alt="Loading..."
-                />
-              </div>
-            </div>
-
             <div
               v-if="loading"
               id="loading_container"
@@ -148,14 +136,26 @@ async function onFileSelected(event: Event) {
 async function extractPerdaAset() {
   loading.value = true;
   extractedPerdaAset.value = null;
-  const formData = new FormData();
-  formData.append("file", pdfFile.value);
-  const response = await fetch(`${baseUrl}/dms/extract-perda-aset`, {
+  let response: Response;
+  const name=pdfFile.value.name;
+  response = await fetch(`${baseUrl}/dms/extract-perda-aset-in-gemini`, {
     method: "POST",
-    body: formData,
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({name:name}),
   });
   if (!response.ok) {
-    throw new Error("Failed to extract document");
+    const formData = new FormData();
+    formData.append("file", pdfFile.value as Blob);
+    response = await fetch(`${baseUrl}/dms/extract-perda-aset-file`, {
+      method: "POST",
+      body: formData,
+    });
+    if (!response.ok) {
+      alert("Failed to extract document");
+      return
+    }
   }
   const data = await response.json();
   console.log(data);

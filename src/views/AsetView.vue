@@ -1,7 +1,7 @@
 <template>
   <div id="main_container">
     <div id="tittle_container" class="fadeIn">
-      <div id="tittle">
+      <div id="tittle" class="flex flex-col justify-center">
         <h1 class="tittle">
           Pemanfaatan<span style="color: green">Aset</span>
         </h1>
@@ -318,7 +318,8 @@ h2.tittle {
 
 #candidate_container {
   margin-top: 10px;
-  width: 1000px;
+  width: 95%;
+  margin:4px;
   justify-content: center;
   display: block;
 }
@@ -365,5 +366,37 @@ h2.tittle {
     flex-direction: column;
     align-items: center;
   }
+  h1.tittle {
+    font-family: Helvetica;
+    font-weight: lighter;
+    font-size: 2em;
+    margin: 0;
+    padding: 0;
+    text-align: right;
+    /* margin: 15px; */
+  }
+  h2.tittle {
+    font-family: Helvetica;
+    font-weight: normal;
+    font-size: 1em;
+    margin: 0;
+    padding: 0;
+  }
+
+  h1.card_title {
+    color: rgb(0, 0, 79);
+  }
+  .logo_img {
+    width: 100px;
+    margin-left: 40px;
+  }
+  .admin_container {
+    display: flex;
+    flex-direction: column;
+  }
+  .admin_item {
+    margin-bottom: 5px;
+  }
+
 }
 </style>

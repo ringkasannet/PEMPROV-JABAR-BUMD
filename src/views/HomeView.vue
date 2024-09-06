@@ -16,8 +16,8 @@
           <img class="card_image" src="../assets/sun.gif" alt="" />
           <p>Asisten pintar yang dapat membantu menjawab pertanyaan terkait peraturan dan kebijakan terkait pemanfaatan aset</p>
         </div>
-        <div class="tools_card">
-          <h2 class="card_title">Smart Asisten Dokumen Hukum</h2>
+        <div class="tools_card" @click="navigateToDocument">
+          <h2 class="card_title">Kelola Dokumen</h2>
           <img class="card_image" src="../assets/connection.gif" alt="" />
           <p>Sistem pintar yang dapat membantu menjawab pertanyaan dan memahami terkait dokumen hukum di lingkungan Pemerintah Provinsi Jawa Barat</p>
         </div>
@@ -39,6 +39,11 @@ function navigateToBUMD() {
 function navigateToAset(){
   console.log("navigateToAset");
   router.push("/aset");
+}
+
+function navigateToDocument(){
+  console.log("navigateToDocument");
+  router.push("/admin");
 }
 function click() {
   console.log("clicked");

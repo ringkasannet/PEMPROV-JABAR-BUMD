@@ -171,9 +171,14 @@ class Bumd {
       return NaN;
     }
   }
+
+  removeBackticks(inputString: string): string {
+    return inputString.replace(/```/g, "");
+  }
   addPenjelasanAi(text: string) {
     // console.log('setting penjelasan AI:',text)
     this.penjelasanAi += text;
+    this.penjelasanAi = this.removeBackticks(this.penjelasanAi);
     let score = this.getScore();
     if (score) {
       console.log("Get scoreExtracted:", score);
@@ -185,6 +190,8 @@ class Bumd {
 
   addPenjelasanAiShort(text: string) {
     this.penjelasanAiShort += text;
+    this.penjelasanAiShort = this.removeBackticks(this.penjelasanAiShort);
+
   }
 
   async evaluasiBUMD() {
@@ -201,7 +208,6 @@ class Bumd {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ query: message.value }),
-
       });
       console.log("response:", response);
       loading.value = false;
@@ -233,7 +239,6 @@ class Bumd {
         };
         readChunk();
       }
-
     } catch (err) {
       console.log("error:", err);
       loading.value = false;

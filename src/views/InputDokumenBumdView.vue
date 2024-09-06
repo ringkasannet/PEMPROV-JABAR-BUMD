@@ -134,14 +134,27 @@ async function onFileSelected(event: Event) {
 
 async function extractPerdaBUMD() {
   loading.value = true;
-  const formData = new FormData();
-  formData.append("file", pdfFile.value);
-  const response = await fetch(`${baseUrl}/dms/extract-perda-bumd`, {
+  extractedPerdaBUMD.value = null;
+  let response: Response;
+  const name = pdfFile.value?.name;
+  response = await fetch(`${baseUrl}/dms/extract-perda-bumd-in-gemini`, {
     method: "POST",
-    body: formData,
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ name: name }),
   });
   if (!response.ok) {
-    throw new Error("Failed to extract document");
+    const formData = new FormData();
+    formData.append("file", pdfFile.value as Blob);
+    response = await fetch(`${baseUrl}/dms/extract-perda-bumd-file`, {
+      method: "POST",
+      body: formData,
+    });
+    if (!response.ok) {
+      alert("Failed to extract document");
+      return;
+    }
   }
   const data = await response.json();
   console.log(data);
